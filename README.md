@@ -2,6 +2,8 @@
 
 ## Diagrama de Casos de Uso:
 
+<img width="799" height="700" alt="image" src="https://github.com/user-attachments/assets/3bb37bfd-09e0-4e72-bc4b-5b5717ad081e" />
+
 ## Diagrama de Classes
 
 ## Diagrama de Componentes: 
