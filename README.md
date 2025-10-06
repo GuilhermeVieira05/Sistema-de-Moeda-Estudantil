@@ -2,7 +2,7 @@
 
 ## Diagrama de Casos de Uso:
 
-<img width="799" height="700" alt="image" src="https://github.com/user-attachments/assets/3bb37bfd-09e0-4e72-bc4b-5b5717ad081e" />
+<img width="795" height="669" alt="image" src="https://github.com/user-attachments/assets/6e98b0d4-a68f-4490-a6a3-12b2e76e5632" />
 
 ## Diagrama de Classes
 
