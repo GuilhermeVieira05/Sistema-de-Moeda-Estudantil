@@ -6,6 +6,10 @@
 
 ## Diagrama de Classes
 
+<img width="6896" height="2583" alt="Diagrama de Classe - LAB03" src="https://github.com/user-attachments/assets/9bf9e40d-d6cc-4895-bd53-24dff831dc95" />
+
+[figma](https://www.figma.com/board/CmK9QxWPJDak5rVcVTzKj0/Diagrama-de-Classe---LAB03?node-id=0-1&t=YWsOGNXVakiB8MaR-1)
+
 ## Diagrama de Componentes: 
 
 <img width="778" height="710" alt="image" src="https://github.com/user-attachments/assets/c670ed6d-5bae-4768-aca3-91fd58bcb07c" />
