@@ -1,29 +1,86 @@
 package services
 
 import (
-	// "backend/application/appErrors"
-	"backend/application/interfaces"
-	// "context"
-	// "hash"
+	"backend/adapters/repositories"
+	"backend/application/model"
+	"backend/config"
+	"errors"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-type userService struct {
-	userDAO interfaces.UserDAO
+type UserService struct {
+	userRepo *repositories.UserRepository
+	config   *config.Config
 }
 
-func NewUserService(userDAO interfaces.UserDAO) *userService {
-	return &userService{userDAO: userDAO}
+func NewUserService(userRepo *repositories.UserRepository, cfg *config.Config) *UserService {
+	return &UserService{
+		userRepo: userRepo,
+		config:   cfg,
+	}
 }
 
-// func (s *userService) RegisterUser(ctx context.Context, email, password, role string) error {
-// 	existingUser, err := s.userDAO.GetUserByEmail(ctx, email)
-// 	if err != nil {
-// 		return err
-// 	}
+func (s *UserService) Login(email, password string) (string, *model.User, error) {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", nil, errors.New("credenciais inválidas")
+		}
+		return "", nil, err
+	}
 
-// 	if existingUser != nil {
-// 		return appErrors.ErrAlreadyExists
-// 	}
+	// Verificar senha
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", nil, errors.New("credenciais inválidas")
+	}
 
-// 	// hashedPassword, err := hashPassword(password)
-// }
+	// Gerar token JWT
+	token, err := s.generateToken(user)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return token, user, nil
+}
+
+func (s *UserService) CreateUser(email, password, role string) (*model.User, error) {
+	// Verificar se usuário já existe
+	existingUser, err := s.userRepo.FindByEmail(email)
+	if err == nil && existingUser != nil {
+		return nil, errors.New("email já cadastrado")
+	}
+
+	// Hash da senha
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &model.User{
+		Email:        email,
+		PasswordHash: string(hashedPassword),
+		Role:         role,
+	}
+
+	if err := s.userRepo.Create(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *UserService) generateToken(user *model.User) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"role":    user.Role,
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 dias
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(s.config.JWTSecret))
+}
