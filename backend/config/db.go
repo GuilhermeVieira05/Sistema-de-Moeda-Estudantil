@@ -1,28 +1,42 @@
 package config
 
 import (
+	"backend/application/model"
+	"fmt"
 	"log"
 	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
+func Connect() (*gorm.DB, error) {
 
-func ConnectDatabase() {
-	var err error
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		return nil, fmt.Errorf("a variável de ambiente DATABASE_URL não foi definida")
+	}
 
-	url := os.Getenv("DATABASE_URL")
-
-	DB, err = gorm.Open(postgres.Open(url), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
-
 	if err != nil {
-		log.Fatalf("Falha ao conectar com o banco de dados PostgreSQL: %v", err)
+		return nil, fmt.Errorf("erro ao conectar ao banco de dados: %w", err)
 	}
-	
-    log.Println("Conexão com o banco de dados PostgreSQL estabelecida com sucesso!")
+
+	log.Println("✅ Conexão com o banco de dados estabelecida com sucesso!")
+	return db, nil
+}
+
+func RunMigrations(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&model.User{},
+		&model.InstituicaoEnsino{},
+		&model.Aluno{},
+		&model.Professor{},
+		&model.EmpresaParceira{},
+		&model.Vantagem{},
+		&model.TransacaoMoeda{},
+		&model.ResgateVantagem{},
+	)
 }
