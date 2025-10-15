@@ -2,16 +2,14 @@
 
 interface TextFieldProps {
   label: string
-  type?: string
+  type?: "text" | "email" | "password" | "number" | "tel" | "url"
   value: string
   onChange: (value: string) => void
   placeholder?: string
   required?: boolean
-  error?: string
-  multiline?: boolean
-  rows?: number
-  helperText?: string
   disabled?: boolean
+  error?: string
+  className?: string
 }
 
 export default function TextField({
@@ -21,47 +19,28 @@ export default function TextField({
   onChange,
   placeholder,
   required = false,
-  error,
-  multiline = false,
-  rows = 3,
-  helperText,
   disabled = false,
+  error,
+  className = "",
 }: TextFieldProps) {
-  const inputClasses = `w-full px-4 py-3 rounded-lg border ${
-    error ? "border-error" : "border-border"
-  } focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`
-
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-foreground mb-2">
+    <div className={`space-y-2 ${className}`}>
+      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         {label}
-        {required && <span className="text-error ml-1">*</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
-
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          rows={rows}
-          className={inputClasses}
-          disabled={disabled}
-        />
-      ) : (
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          className={inputClasses}
-          disabled={disabled}
-        />
-      )}
-
-      {error && <p className="text-error text-sm mt-1">{error}</p>}
-      {!error && helperText && <p className="text-muted-foreground text-sm mt-1">{helperText}</p>}
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        className={`flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors ${
+          error ? "border-red-500 focus-visible:ring-red-500" : ""
+        }`}
+      />
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   )
 }

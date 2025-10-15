@@ -1,5 +1,4 @@
 import type React from "react"
-// import Logo from "./logo"
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -13,13 +12,13 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="mb-8">
-            {/* <Logo size={40} /> */}
-          </div>
+          <div className="mb-8">{/* <Logo size={40} /> */}</div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
-            {subtitle && <p className="text-muted mb-6">{subtitle}</p>}
+          <div className="bg-white rounded-2xl shadow-lg p-12 space-y-8">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-foreground mb-4">{title}</h1>
+              {subtitle && <p className="text-lg text-muted-foreground mb-8">{subtitle}</p>}
+            </div>
 
             {children}
           </div>

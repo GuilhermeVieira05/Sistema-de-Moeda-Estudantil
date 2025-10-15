@@ -41,19 +41,46 @@ export default function StudentRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
-    // Validação básica
+  
     if (formData.password !== formData.confirmPassword) {
       alert("As senhas não coincidem")
       setLoading(false)
       return
     }
-
-    // Simulação de cadastro
-    setTimeout(() => {
+  
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/register/aluno", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: formData.name,
+          email: formData.email,
+          password: formData.password,
+          cpf: formData.cpf,
+          rg: formData.rg,
+          endereco: formData.address,
+          instituicao_ensino_id: 1,
+          curso: formData.course,
+        }),
+      })
+  
+      if (!response.ok) {
+        const data = await response.json()
+        alert(data.error || "Erro ao criar aluno")
+        setLoading(false)
+        return
+      }
+  
+      alert("Aluno criado com sucesso!")
       router.push("/login")
-    }, 1000)
+    } catch (err) {
+      console.error(err)
+      alert("Erro ao conectar com o servidor")
+      setLoading(false)
+    }
   }
+  
+  
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
