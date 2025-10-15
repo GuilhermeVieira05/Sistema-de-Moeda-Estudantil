@@ -4,15 +4,15 @@ import (
 	"backend/application/model"
 	"fmt"
 	"log"
-	"os"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-func Connect() (*gorm.DB, error) {
+func Connect(cfg *Config) (*gorm.DB, error) {
 
-	databaseURL := os.Getenv("DATABASE_URL")
+	databaseURL := cfg.DatabaseURL
+
 	if databaseURL == "" {
 		return nil, fmt.Errorf("a variável de ambiente DATABASE_URL não foi definida")
 	}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -21,38 +22,38 @@ type Config struct {
 // Função principal para carregar a configuração
 func LoadConfig() *Config {
 
-	// Detecta o diretório base do projeto
-	wd, err := os.Getwd()
+	envPath, err := findEnvFile()
 	if err != nil {
-		log.Fatalf("❌ Erro ao obter diretório de trabalho: %v", err)
-	}
-
-	// Caminho absoluto do .env
-	envPath := filepath.Join(wd, "..", ".env")
-
-	if err := godotenv.Load(envPath); err != nil {
-		log.Printf("⚠️  Aviso: arquivo .env não encontrado em %s, usando variáveis do ambiente.\n", envPath)
+		log.Printf("⚠️  Aviso: arquivo .env não encontrado, usando variáveis do ambiente.")
 	} else {
+		_ = godotenv.Load(envPath)
 		log.Printf("✅ Arquivo .env carregado de: %s\n", envPath)
 	}
 
 	cfg := &Config{
-		DatabaseURL:  getEnv("DATABASE_URL", ""),
-		JWTSecret:    getEnv("JWT_SECRET", ""),
-		SMTPHost:     getEnv("SMTP_HOST", ""),
-		SMTPPort:     getEnv("SMTP_PORT", "587"), // porta padrão SMTP
-		SMTPUser:     getEnv("SMTP_USER", ""),
-		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
-		FrontendURL:  getEnv("FRONTEND_URL", ""),
+		DatabaseURL:  os.Getenv("DATABASE_URL"),
+		JWTSecret:    os.Getenv("JWT_SECRET"),
+		SMTPHost:     os.Getenv("SMTP_HOST"),
+		SMTPPort:     os.Getenv("SMTP_PORT"),
+		SMTPUser:     os.Getenv("SMTP_USER"),
+		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 	}
 
 	return cfg
 }
 
-// Função auxiliar que busca uma variável de ambiente com valor padrão
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+func findEnvFile() (string, error) {
+	dir, _ := os.Getwd()
+	for {
+		envPath := filepath.Join(dir, ".env")
+		if _, err := os.Stat(envPath); err == nil {
+			return envPath, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
-	return defaultValue
+	return "", fmt.Errorf(".env não encontrado")
 }

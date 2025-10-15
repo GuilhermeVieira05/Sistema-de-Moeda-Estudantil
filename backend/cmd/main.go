@@ -12,7 +12,7 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 
-	db, err := config.Connect()
+	db, err := config.Connect(cfg)
 	if err != nil {
 		log.Fatalf("❌ Falha ao conectar ao banco: %v", err)
 	}
