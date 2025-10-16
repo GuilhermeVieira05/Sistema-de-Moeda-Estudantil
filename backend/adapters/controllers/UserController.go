@@ -14,8 +14,11 @@ type UserController struct {
 	empresaService *services.EmpresaParceiraService
 }
 
-func NewUserController(userService *services.UserService) *UserController {
-	return &UserController{userService: userService}
+func NewUserController(userService *services.UserService, alunoService *services.AlunoService) *UserController {
+    return &UserController{
+        userService:  userService,
+        alunoService: alunoService,
+    }
 }
 
 type LoginRequest struct {
@@ -62,49 +65,38 @@ func (h *UserController) Login(c *gin.Context) {
 }
 
 func (h *UserController) RegisterAluno(c *gin.Context) {
-	var req RegisterAlunoRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+    var req RegisterAlunoRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // Criar usuário primeiro
+    user, err := h.userService.CreateUser(req.Email, req.Password, "aluno")
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // Criar aluno associado ao usuário
+    aluno := &model.Aluno{
+        UserID:   user.ID,
+        Nome:     req.Nome,
+        CPF:      req.CPF,
+        RG:       req.RG,
+        Endereco: req.Endereco,
+        Curso:    req.Curso,
+		InstituicaoEnsinoID: req.InstituicaoEnsinoID,    
 	}
 
-	// Criar usuário
-	user, err := h.userService.CreateUser(req.Email, req.Password, "aluno")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+    if err := h.alunoService.CreateAluno(aluno); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
-	// Criar aluno
-	aluno := &model.Aluno{
-		UserID:              user.ID,
-		Nome:                req.Nome,
-		CPF:                 req.CPF,
-		RG:                  req.RG,
-		Endereco:            req.Endereco,
-		InstituicaoEnsinoID: req.InstituicaoEnsinoID,
-		Curso:               req.Curso,
-		SaldoMoedas:         0,
-	}
-
-	if err := h.alunoService.CreateAluno(aluno); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Gerar token
-	token, _, err := h.userService.Login(req.Email, req.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar token"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "Aluno cadastrado com sucesso",
-		"token":   token,
-		"user":    user,
-	})
+    c.JSON(http.StatusCreated, gin.H{"message": "Aluno criado com sucesso"})
 }
+
 
 func (h *UserController) RegisterEmpresa(c *gin.Context) {
 	var req RegisterEmpresaRequest

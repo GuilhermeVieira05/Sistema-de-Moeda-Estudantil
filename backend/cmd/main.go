@@ -6,6 +6,7 @@ import (
 	"backend/container"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,7 +26,14 @@ func main() {
 
 	r := gin.Default()
 
-	// Inicializa as rotas passando o container inteiro
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // endereço do frontend
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
 	routes.SetupRoutes(r, c)
 	
 	log.Println("🚀 Servidor iniciado na porta 8080")
