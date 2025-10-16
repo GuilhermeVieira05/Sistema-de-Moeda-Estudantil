@@ -33,14 +33,14 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 
 	emailService := services.NewEmailService(cfg)
 	alunoService := services.NewAlunoService(alunoRepo, userRepo, emailService)
-	userService := services.NewUserService(userRepo, cfg)
+	userService := services.NewUserService(userRepo, cfg, db)
 	empresaService := services.NewEmpresaParceiraService(empresaRepo, userRepo)
 	professorService := services.NewProfessorService(professorRepo, userRepo)
 	resgateVantagemService := services.NewResgateVantagemService(resgateVantagemRepo, alunoRepo, vantagemRepo, emailService)
 	transacaoMoedaService := services.NewTransacaoMoedaService(transacaoMoedaRepo, professorRepo, alunoRepo, emailService)
 	vantagemService := services.NewVantagemService(vantagemRepo, empresaRepo)
 
-	userController := controllers.NewUserController(userService, alunoService)
+	userController := controllers.NewUserController(userService, alunoService, empresaService)
 	alunoController := controllers.NewAlunoController(alunoService)
 	professorController := controllers.NewProfessorController(professorService, transacaoMoedaService)
 	empresaController := controllers.NewEmpresaParceiraController(empresaService, vantagemService)

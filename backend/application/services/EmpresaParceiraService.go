@@ -4,6 +4,8 @@ import (
 	"backend/adapters/repositories"
 	"backend/application/model"
 	"errors"
+
+	"gorm.io/gorm"
 )
 
 type EmpresaParceiraService struct {
@@ -23,6 +25,8 @@ func (s *EmpresaParceiraService) CreateEmpresa(empresa *model.EmpresaParceira) e
 	existingEmpresa, err := s.empresaRepo.FindByCNPJ(empresa.CNPJ)
 	if err == nil && existingEmpresa != nil {
 		return errors.New("CNPJ já cadastrado")
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err // erro real de DB
 	}
 
 	return s.empresaRepo.Create(empresa)

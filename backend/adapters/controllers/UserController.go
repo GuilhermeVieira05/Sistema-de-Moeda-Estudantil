@@ -1,11 +1,13 @@
 package controllers
 
 import (
-	"backend/application/services"
 	"backend/application/model"
+	"backend/application/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserController struct {
@@ -14,10 +16,11 @@ type UserController struct {
 	empresaService *services.EmpresaParceiraService
 }
 
-func NewUserController(userService *services.UserService, alunoService *services.AlunoService) *UserController {
+func NewUserController(userService *services.UserService, alunoService *services.AlunoService, empresaService *services.EmpresaParceiraService) *UserController {
     return &UserController{
-        userService:  userService,
-        alunoService: alunoService,
+        userService:    userService,
+        alunoService:   alunoService,
+        empresaService: empresaService,
     }
 }
 
@@ -65,37 +68,51 @@ func (h *UserController) Login(c *gin.Context) {
 }
 
 func (h *UserController) RegisterAluno(c *gin.Context) {
-    var req RegisterAlunoRequest
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-    // Criar usuário primeiro
-    user, err := h.userService.CreateUser(req.Email, req.Password, "aluno")
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-    // Criar aluno associado ao usuário
-    aluno := &model.Aluno{
-        UserID:   user.ID,
-        Nome:     req.Nome,
-        CPF:      req.CPF,
-        RG:       req.RG,
-        Endereco: req.Endereco,
-        Curso:    req.Curso,
-		InstituicaoEnsinoID: req.InstituicaoEnsinoID,    
+	var req RegisterAlunoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-    if err := h.alunoService.CreateAluno(aluno); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	// Executar transação
+	err := h.userService.DB.Transaction(func(tx *gorm.DB) error {
+		// Criar usuário
+		hashSenha, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		user := &model.User{
+			Email:        req.Email,
+			PasswordHash: string(hashSenha),
+			Role:         "aluno",
+		}
+		if err := tx.Create(user).Error; err != nil {
+			return err
+		}
 
-    c.JSON(http.StatusCreated, gin.H{"message": "Aluno criado com sucesso"})
+		// Criar aluno
+		aluno := &model.Aluno{
+			UserID:             user.ID,
+			Nome:               req.Nome,
+			CPF:                req.CPF,
+			RG:                 req.RG,
+			Endereco:           req.Endereco,
+			Curso:              req.Curso,
+			InstituicaoEnsinoID: req.InstituicaoEnsinoID,
+		}
+		if err := tx.Create(aluno).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Aluno criado com sucesso"})
 }
+
+
 
 
 func (h *UserController) RegisterEmpresa(c *gin.Context) {
@@ -105,22 +122,34 @@ func (h *UserController) RegisterEmpresa(c *gin.Context) {
 		return
 	}
 
-	// Criar usuário
-	user, err := h.userService.CreateUser(req.Email, req.Password, "empresa")
+	// Executar transação
+	err := h.userService.DB.Transaction(func(tx *gorm.DB) error {
+		// Criar usuário
+		hashSenha, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		user := &model.User{
+			Email:        req.Email,
+			PasswordHash: string(hashSenha),
+			Role:         "empresa",
+		}
+		if err := tx.Create(user).Error; err != nil {
+			return err
+		}
+
+		// Criar empresa
+		empresa := &model.EmpresaParceira{
+			UserID:   user.ID,
+			Nome:     req.Nome,
+			CNPJ:     req.CNPJ,
+			Endereco: req.Endereco,
+		}
+		if err := tx.Create(empresa).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Criar empresa
-	empresa := &model.EmpresaParceira{
-		UserID:   user.ID,
-		Nome:     req.Nome,
-		CNPJ:     req.CNPJ,
-		Endereco: req.Endereco,
-	}
-
-	if err := h.empresaService.CreateEmpresa(empresa); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -135,6 +164,6 @@ func (h *UserController) RegisterEmpresa(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Empresa cadastrada com sucesso",
 		"token":   token,
-		"user":    user,
 	})
 }
+

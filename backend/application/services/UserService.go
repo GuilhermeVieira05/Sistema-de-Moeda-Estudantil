@@ -15,14 +15,22 @@ import (
 type UserService struct {
 	userRepo *repositories.UserRepository
 	config   *config.Config
+	DB       *gorm.DB
 }
 
-func NewUserService(userRepo *repositories.UserRepository, cfg *config.Config) *UserService {
+
+func (s *UserService) HashPassword(password string) (any, any) {
+	panic("unimplemented")
+}
+
+func NewUserService(userRepo *repositories.UserRepository, cfg *config.Config, db *gorm.DB) *UserService {
 	return &UserService{
 		userRepo: userRepo,
 		config:   cfg,
+		DB:       db,
 	}
 }
+
 
 func (s *UserService) Login(email, password string) (string, *model.User, error) {
 	user, err := s.userRepo.FindByEmail(email)
