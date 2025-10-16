@@ -70,7 +70,7 @@ export default function CompanyDashboard() {
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Bem-vindo, {mockCompany.name}!</h1>
-          <p className="text-muted">Gerencie suas vantagens e acompanhe os resgates</p>
+          <p className="text-gray-500">Gerencie suas vantagens e acompanhe os resgates</p>
         </div>
 
         {/* Stats Grid */}
