@@ -16,6 +16,12 @@
 
 [figma](https://www.figma.com/design/lgWPNO7PHsBxLOGAFVuVQA/Architecture-Diagram-Components--Community-?node-id=0-1&p=f&t=gWqeWhVGiXpMpVIB-0)
 
+## Diagrama de Entidades e Relacionamentos: 
+
+<img width="1451" height="451" alt="DiagramaERLab03 drawio" src="https://github.com/user-attachments/assets/f44e9390-9265-4795-9e97-09cd9d0d0ccf" />
+
+[Link](https://drive.google.com/file/d/1Koos8QEmCg6nSshWPby1r7_WG9Edu_FZ/view?usp=sharing)
+
 ## Histórias de Usuário
 
 <p align="center">
