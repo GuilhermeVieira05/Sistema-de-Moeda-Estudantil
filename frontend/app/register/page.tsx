@@ -24,9 +24,9 @@ export default function RegisterPage() {
                 />
               </svg>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 cursor-pointer">
               <h3 className="font-semibold text-lg text-foreground mb-1">Sou Aluno</h3>
-              <p className="text-sm text-muted">Receba moedas por mérito e troque por vantagens</p>
+              <p className="text-sm text-gray-500">Receba moedas por mérito e troque por vantagens</p>
             </div>
           </div>
         </button>
@@ -46,15 +46,15 @@ export default function RegisterPage() {
                 />
               </svg>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 cursor-pointer">
               <h3 className="font-semibold text-lg text-foreground mb-1">Sou Empresa Parceira</h3>
-              <p className="text-sm text-muted">Ofereça vantagens e atraia estudantes</p>
+              <p className="text-sm text-gray-500">Ofereça vantagens e atraia estudantes</p>
             </div>
           </div>
         </button>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted">
+          <p className="text-base text-gray-500">
             Já tem uma conta?{" "}
             <Link href="/login" className="text-primary font-medium hover:underline">
               Faça login

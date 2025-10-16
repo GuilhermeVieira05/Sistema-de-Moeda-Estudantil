@@ -89,7 +89,7 @@ export default function StudentAdvantagesPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Vantagens Disponíveis</h1>
-          <p className="text-muted">Resgate vantagens incríveis com suas moedas</p>
+          <p className="text-gray-500">Resgate vantagens incríveis com suas moedas</p>
         </div>
 
         {/* Search and Filters */}

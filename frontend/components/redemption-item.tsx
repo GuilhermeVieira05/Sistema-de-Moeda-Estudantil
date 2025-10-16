@@ -31,16 +31,16 @@ export default function RedemptionItem({ redemption, onComplete }: RedemptionIte
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm text-muted">
+          <p className="text-sm text-gray-500">
             <span className="font-medium">Aluno:</span> {redemption.studentName}
           </p>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-gray-500">
             <span className="font-medium">Email:</span> {redemption.studentEmail}
           </p>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-gray-500">
             <span className="font-medium">Data:</span> {redemption.date}
           </p>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-gray-500">
             <span className="font-medium">Código:</span>{" "}
             <span className="font-mono bg-surface px-2 py-1 rounded">{redemption.code}</span>
           </p>

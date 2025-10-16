@@ -40,7 +40,7 @@ export default function AuthForm({
         </Link>
       </div>
 
-      <Button type="submit" variant="primary" size="lg" className="w-full" loading={loading}>
+      <Button type="submit" variant="primary" size="lg" className="w-full text-white" loading={loading}>
         {buttonText}
       </Button>
 

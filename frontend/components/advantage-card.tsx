@@ -47,6 +47,7 @@ export default function AdvantageCard({ advantage, onRedeem, userBalance }: Adva
             fullWidth
             disabled={!canAfford}
             variant={canAfford ? "primary" : "outline"}
+            className="text-white"
           >
             {canAfford ? "Resgatar Vantagem" : "Saldo Insuficiente"}
           </Button>

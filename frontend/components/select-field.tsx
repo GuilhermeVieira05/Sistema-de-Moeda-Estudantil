@@ -20,8 +20,8 @@ export default function SelectField({
   error,
 }: SelectFieldProps) {
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-foreground mb-2">
+    <div className="">
+      <label className="block text-sm font-medium text-foreground">
         {label}
         {required && <span className="text-error ml-1">*</span>}
       </label>
