@@ -39,3 +39,7 @@ func (s *EmpresaParceiraService) GetEmpresaByUserID(userID uint) (*model.Empresa
 func (s *EmpresaParceiraService) GetEmpresaByID(id uint) (*model.EmpresaParceira, error) {
 	return s.empresaRepo.FindByID(id)
 }
+
+func (s *EmpresaParceiraService) UpdateEmpresa(empresa *model.EmpresaParceira) error {
+	return s.empresaRepo.Update(empresa)
+}

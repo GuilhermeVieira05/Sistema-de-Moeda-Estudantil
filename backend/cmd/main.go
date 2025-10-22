@@ -19,7 +19,7 @@ func main() {
 	}
 
 	if err := config.RunMigrations(db); err != nil {
-		log.Fatalf("❌ Falha ao migrar o banco de dados: %v", err)
+		log.Printf("❌ Falha ao migrar o banco de dados: %v", err)
 	}
 
 	c := container.NewContainer(db, cfg)
@@ -35,7 +35,7 @@ func main() {
 	}))
 
 	routes.SetupRoutes(r, c)
-	
+
 	log.Println("🚀 Servidor iniciado na porta 8080")
 	r.Run(":8080")
 }
