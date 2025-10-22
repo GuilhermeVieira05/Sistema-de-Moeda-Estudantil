@@ -43,6 +43,10 @@ func (r *VantagemRepository) ListActive() ([]model.Vantagem, error) {
 
 func (r *VantagemRepository) ListByEmpresa(empresaID uint) ([]model.Vantagem, error) {
 	var vantagens []model.Vantagem
-	err := r.db.Where("empresa_parceira_id = ?", empresaID).Find(&vantagens).Error
+	err := r.db.
+		Preload("EmpresaParceira").
+		Where("empresa_parceira_id = ?", empresaID).
+		Order("created_at DESC").
+		Find(&vantagens).Error
 	return vantagens, err
 }
