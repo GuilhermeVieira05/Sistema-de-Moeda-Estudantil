@@ -32,10 +32,37 @@ export default function CompanyRegisterPage() {
       return
     }
 
-    setTimeout(() => {
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/register/empresa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          nome: formData.companyName,
+          cnpj: formData.cnpj,
+          endereco: formData.address,
+        }),
+      })
+
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(errorData.error || "Erro ao criar conta")
+        setLoading(false)
+        return
+      }
+
+      alert("Conta criada com sucesso!")
       router.push("/login")
-    }, 1000)
+    } catch (err) {
+      console.error(err)
+      alert("Erro de conexão com o servidor.")
+    } finally {
+      setLoading(false)
+    }
   }
+
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))

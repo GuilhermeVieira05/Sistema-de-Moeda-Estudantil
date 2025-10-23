@@ -55,6 +55,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 		empresa.Use(middlewares.RoleMiddleware("empresa"))
 		{
 			empresa.GET("/perfil", c.EmpresaController.GetPerfil)
+			empresa.PUT("", c.EmpresaController.AtualizarEmpresa)
 			empresa.POST("/vantagens", c.EmpresaController.CriarVantagem)
 			empresa.PUT("/vantagens/:id", c.EmpresaController.AtualizarVantagem)
 			empresa.DELETE("/vantagens/:id", c.EmpresaController.DeletarVantagem)

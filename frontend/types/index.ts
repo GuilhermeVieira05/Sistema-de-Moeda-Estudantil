@@ -3,7 +3,7 @@ export type UserType = "student" | "professor" | "company"
 export interface User {
   id: string
   email: string
-  name: string
+  nome: string
   type: UserType
 }
 

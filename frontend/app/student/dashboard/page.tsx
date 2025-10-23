@@ -4,7 +4,10 @@ import DashboardLayout from "@/components/dashboard-layout"
 import StatCard from "@/components/stat-card"
 import AdvantageCard from "@/components/advantage-card"
 import TransactionItem from "@/components/transaction-item"
-import type { Advantage, Transaction } from "@/types"
+import { Student, type Advantage, type Transaction } from "@/types"
+import { getAlunoData } from "@/api/alunoApi"
+import { useEffect, useState } from "react"
+import LoadingSpinner from "@/components/loading-spinner"
 
 // Mock data
 const mockStudent = {
@@ -126,7 +129,7 @@ export default function StudentDashboard() {
     <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={aluno.saldo_moedas}>
       <div className="space-y-8">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
-          <h1 className="text-4xl font-bold mb-3">Bem-vindo, {mockStudent.name}!</h1>
+          <h1 className="text-4xl font-bold mb-3">Bem-vindo, {handleName(aluno.nome)}!</h1>
           <p className="text-blue-100 text-lg">Acompanhe seu saldo e resgate vantagens incríveis</p>
         </div>
 
