@@ -33,6 +33,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			aluno.GET("/perfil", c.AlunoController.GetPerfil)
 			aluno.GET("/extrato", c.AlunoController.GetExtrato)
 			aluno.POST("/resgatar-vantagem", c.VantagemController.ResgatarVantagem)
+			aluno.PUT("/", c.AlunoController.UpdateAluno)
 		}
 
 		// ===========================

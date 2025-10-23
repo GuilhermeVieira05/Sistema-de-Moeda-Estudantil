@@ -40,6 +40,22 @@ func (s *AlunoService) GetAlunoByID(id uint) (*model.Aluno, error) {
 	return s.alunoRepo.FindByID(id)
 }
 
+func (s *AlunoService) UpdateAluno(alunoAtualizado *model.Aluno) error {
+	alunoExistente, err := s.alunoRepo.FindByID(alunoAtualizado.ID)
+	if err != nil {
+		return err
+	}
+
+	// Atualiza apenas os campos permitidos
+	alunoExistente.Nome = alunoAtualizado.Nome
+	alunoExistente.RG = alunoAtualizado.RG
+	alunoExistente.Endereco = alunoAtualizado.Endereco
+	alunoExistente.Curso = alunoAtualizado.Curso
+	alunoExistente.InstituicaoEnsinoID = alunoAtualizado.InstituicaoEnsinoID
+
+	return s.alunoRepo.Update(alunoExistente)
+}
+
 func (s *AlunoService) UpdateSaldo(alunoID uint, valor int) error {
 	aluno, err := s.alunoRepo.FindByID(alunoID)
 	if err != nil {

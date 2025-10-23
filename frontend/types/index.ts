@@ -8,13 +8,29 @@ export interface User {
 }
 
 export interface Student extends User {
-  type: "student"
+  ID: number
+  CreatedAt: string
+  UpdatedAt: string
+  DeletedAt: string | null
   cpf: string
   rg: string
-  address: string
-  institution: string
-  course: string
-  balance: number
+  endereco: string
+  curso: string
+  instituicao_ensino: Institution
+  instituicao_ensino_id: number
+  nome: string
+  saldo_moedas: number
+  user: UserResponse
+  user_id: number
+}
+
+export interface UserResponse {
+  ID: number
+  CreatedAt: string
+  UpdatedAt: string
+  DeletedAt: string | null
+  email: string
+  nome: string
 }
 
 export interface Professor extends User {
@@ -64,7 +80,9 @@ export interface Redemption {
 }
 
 export interface Institution {
-  id: string
-  name: string
-  courses: string[]
+  ID: number
+  CreatedAt: string
+  UpdatedAt: string
+  DeletedAt: string | null
+  nome: string
 }

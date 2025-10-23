@@ -70,12 +70,60 @@ const mockFeaturedAdvantages: Advantage[] = [
 ]
 
 export default function StudentDashboard() {
+  const [aluno, setAluno] = useState<Student | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const handleRedeem = (advantage: Advantage) => {
     alert(`Resgatando: ${advantage.title}`)
   }
 
+  useEffect(() => {
+    const fetchAluno = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const alunoBuscado = await getAlunoData();
+
+        if (alunoBuscado === null) {
+          setError("Não foi possível carregar os dados do aluno.");
+          setAluno(null);
+        } else {
+          console.log("Dados do aluno buscados:", alunoBuscado);
+          setAluno(alunoBuscado);
+        }
+      } catch (err: any) {
+        console.error("Erro ao buscar aluno:", err);
+        setError(err.message || "Ocorreu um erro desconhecido ao carregar os dados.");
+        setAluno(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAluno()
+  }, [])
+
+
+  const handleName = (name: string) => {
+    let splitName = name.split(" ")
+    if (splitName.length > 1) {
+      return splitName[0] + " " + splitName.at(-1)
+    } else {
+      return splitName[0]
+    }
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (!aluno) {
+    return <div>Não foi possível carregar os dados do aluno.</div>
+  }
+
+  console.log("Aluno: ", aluno)
   return (
-    <DashboardLayout userType="student" userName={mockStudent.name} balance={mockStudent.balance}>
+    <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={aluno.saldo_moedas}>
       <div className="space-y-8">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
           <h1 className="text-4xl font-bold mb-3">Bem-vindo, {mockStudent.name}!</h1>
@@ -86,7 +134,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             title="Saldo Atual"
-            value={mockStudent.balance}
+            value={aluno.saldo_moedas}
             icon={
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -97,12 +145,12 @@ export default function StudentDashboard() {
                 />
               </svg>
             }
-            trend={{ value: "+150 este mês", positive: true }}
+            trend={{ value: "+0 este mês", positive: true }}
           />
 
           <StatCard
             title="Moedas Recebidas"
-            value={1250}
+            value={0}
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
@@ -112,7 +160,7 @@ export default function StudentDashboard() {
 
           <StatCard
             title="Vantagens Resgatadas"
-            value={8}
+            value={0}
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
