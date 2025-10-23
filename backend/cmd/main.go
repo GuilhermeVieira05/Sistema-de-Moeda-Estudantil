@@ -5,6 +5,7 @@ import (
 	"backend/config"
 	"backend/container"
 	"log"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,9 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // endereço do frontend
+		AllowOriginFunc: func(origin string) bool {
+            return strings.HasPrefix(origin, "http://localhost:")
+        },
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

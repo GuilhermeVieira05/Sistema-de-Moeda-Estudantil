@@ -27,6 +27,39 @@ func (h *AlunoController) GetPerfil(c *gin.Context) {
 	c.JSON(http.StatusOK, aluno)
 }
 
+func (h *AlunoController) UpdatePerfil(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	var input services.UpdateAlunoInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedAluno, err := h.alunoService.UpdateAlunoPerfil(userID, &input)
+	if err != nil {
+		if err.Error() == "email já está em uso por outra conta" || err.Error() == "CPF já está em uso por outra conta" {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar perfil"})
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedAluno)
+}
+
+func (h *AlunoController) DeletePerfil(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	if err := h.alunoService.DeleteAlunoPerfil(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Aluno e usuário associado deletados com sucesso"})
+}
+
 func (h *AlunoController) GetExtrato(c *gin.Context) {
 	userID := c.GetUint("user_id")
 

@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend/application/model"
 	"backend/application/services"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -192,7 +193,7 @@ func (h *EmpresaParceiraController) ListResgates(c *gin.Context) {
 
 func (h *EmpresaParceiraController) AtualizarEmpresa(c *gin.Context) {
 	userID := c.GetUint("user_id")
-
+	fmt.Println("UserID:", c)
 	var req struct {
 		Nome     string `json:"nome"`
 		Endereco string `json:"endereco"`
