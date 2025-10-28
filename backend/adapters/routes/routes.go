@@ -7,40 +7,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupRoutes registra todas as rotas públicas e protegidas
 func SetupRoutes(r *gin.Engine, c *container.Container) {
 
-	// ROTAS PÚBLICAS
 	public := r.Group("/api")
 	{
 		public.POST("/auth/login", c.UserController.Login)
 		public.POST("/auth/register/aluno", c.UserController.RegisterAluno)
 		public.POST("/auth/register/empresa", c.UserController.RegisterEmpresa)
+		public.POST("/auth/register/instituicao", c.UserController.RegisterInstituicao)
 		public.GET("/instituicoes", c.InstituicaoController.ListInstituicoes)
 		public.GET("/vantagens", c.VantagemController.ListVantagens)
 	}
 
-	// ROTAS PROTEGIDAS (com JWT)
 	protected := r.Group("/api")
 	protected.Use(middlewares.AuthMiddleware(c.Config.JWTSecret))
 	{
-		// ===========================
-		// ROTAS DE ALUNO
-		// ===========================
 		aluno := protected.Group("/aluno")
 		aluno.Use(middlewares.RoleMiddleware("aluno"))
 		{
 			aluno.GET("/perfil", c.AlunoController.GetPerfil)
 			aluno.GET("/extrato", c.AlunoController.GetExtrato)
 			aluno.POST("/resgatar-vantagem", c.VantagemController.ResgatarVantagem)
-			aluno.PUT("", c.AlunoController.UpdatePerfil)    
-			aluno.DELETE("", c.AlunoController.DeletePerfil) 
+			aluno.PUT("", c.AlunoController.UpdatePerfil)
+			aluno.DELETE("", c.AlunoController.DeletePerfil)
 			aluno.PATCH("/saldo", c.AlunoController.UpdateSaldo)
 		}
 
-		// ===========================
-		// ROTAS DE PROFESSOR
-		// ===========================
 		professor := protected.Group("/professor")
 		professor.Use(middlewares.RoleMiddleware("professor"))
 		{
@@ -50,9 +42,6 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			professor.GET("/alunos", c.AlunoController.ListAlunos)
 		}
 
-		// ===========================
-		// ROTAS DE EMPRESA PARCEIRA
-		// ===========================
 		empresa := protected.Group("/empresa")
 		empresa.Use(middlewares.RoleMiddleware("empresa"))
 		{
@@ -63,11 +52,26 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			empresa.DELETE("/vantagens/:id", c.EmpresaController.DeletarVantagem)
 			empresa.GET("/vantagens", c.EmpresaController.ListVantagens)
 			empresa.GET("/resgates", c.EmpresaController.ListResgates)
+			empresa.GET("/parcerias", c.ParceriaController.GetParceriasByEmpresa)
 		}
 
 		instituicao := protected.Group("/instituicao")
 		instituicao.Use(middlewares.RoleMiddleware("instituicao"))
 		{
+			instituicao.GET("/perfil", c.InstituicaoController.GetPerfil)
+			instituicao.PUT("", c.InstituicaoController.AtualizarInstituicao)
+
+			instituicao.POST("/professores", c.InstituicaoController.RegisterProfessor)
+			instituicao.GET("/professores", c.InstituicaoController.ListProfessores)
+			instituicao.GET("/professores/:id", c.InstituicaoController.GetProfessor)
+			instituicao.PUT("/professores/:id", c.InstituicaoController.UpdateProfessor)
+			instituicao.DELETE("/professores/:id", c.InstituicaoController.DeleteProfessor)
+
+			instituicao.GET("/alunos", c.AlunoController.ListAlunos)
+
+			instituicao.GET("/parcerias", c.ParceriaController.GetParceriasByInstituicao)
+			instituicao.POST("/parcerias/empresa/:id", c.ParceriaController.SolicitarParceria)
+			instituicao.DELETE("/parcerias/empresa/:id", c.ParceriaController.RemoverParceria)
 		}
 	}
 }

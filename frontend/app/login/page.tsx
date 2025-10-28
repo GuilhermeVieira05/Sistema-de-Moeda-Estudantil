@@ -1,3 +1,4 @@
+// app/login/page.tsx (Modificado)
 "use client"
 
 import { useState } from "react"
@@ -7,7 +8,7 @@ import AuthForm from "@/components/auth-form"
 import TextField from "@/components/text-field"
 
 export default function Page() {
-  const [email, setEmail] = useState("")
+  const [loginField, setLoginField] = useState("") // Mudei de 'email' para 'loginField'
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -20,7 +21,8 @@ export default function Page() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        // No backend, o handler de login deve verificar se 'login' é email ou cnpj
+        body: JSON.stringify({ login: loginField, password }), 
       })
 
       const data = await res.json()
@@ -37,7 +39,9 @@ export default function Page() {
       if (data.user.role === "aluno") {
         router.push("/student/dashboard")
       } else if (data.user.role === "empresa") {
-        router.push("company/dashboard")
+        router.push("/company/dashboard") 
+      } else if (data.user.role === "instituicao") {
+        router.push("/institution/dashboard")
       } else {
         router.push("/")
       }
@@ -53,8 +57,23 @@ export default function Page() {
   return (
     <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar">
       <AuthForm onSubmit={handleSubmit} loading={loading} buttonText="Entrar">
-        <TextField label="Email" type="email" value={email} onChange={setEmail} placeholder="seu@email.com" required />
-        <TextField label="Senha" type="password" value={password} onChange={setPassword} placeholder="••••••••" required />
+        <TextField 
+          label="Email ou CNPJ" 
+          type="text" // Mudei o tipo para aceitar CNPJ
+          value={loginField} 
+          onChange={setLoginField} 
+          placeholder="seu@email.com ou 00.000.000/0001-00" // Mudei o placeholder
+          required 
+        />
+        {/* === FIM DA MODIFICAÇÃO === */}
+        <TextField 
+          label="Senha" 
+          type="password" 
+          value={password} 
+          onChange={setPassword} 
+          placeholder="••••••••" 
+          required 
+        />
       </AuthForm>
     </AuthLayout>
   )

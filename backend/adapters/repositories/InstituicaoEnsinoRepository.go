@@ -1,3 +1,4 @@
+// backend/application/repositories/instituicao_ensino_repository.go
 package repositories
 
 import (
@@ -27,8 +28,14 @@ func (r *InstituicaoEnsinoRepository) FindByID(id uint) (*model.InstituicaoEnsin
 	return &instituicao, nil
 }
 
-func (r *InstituicaoEnsinoRepository) List() ([]model.InstituicaoEnsino, error) {
+// FindAll (Renomeado de List para bater com o InstituicaoService)
+func (r *InstituicaoEnsinoRepository) FindAll() ([]model.InstituicaoEnsino, error) {
 	var instituicoes []model.InstituicaoEnsino
 	err := r.db.Find(&instituicoes).Error
 	return instituicoes, err
+}
+
+// Update (Método adicionado que estava faltando para o Service)
+func (r *InstituicaoEnsinoRepository) Update(instituicao *model.InstituicaoEnsino) error {
+	return r.db.Save(instituicao).Error
 }

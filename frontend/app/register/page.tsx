@@ -31,8 +31,9 @@ export default function RegisterPage() {
           </div>
         </button>
 
+        {/* === Bloco Modificado === */}
         <button
-          onClick={() => router.push("/register/professor")}
+          onClick={() => router.push("/register/institution")}
           className="w-full p-6 border-2 border-border rounded-xl hover:border-orange-500 hover:bg-surface transition-all text-left group"
         >
           <div className="flex items-start gap-4">
@@ -47,11 +48,12 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div className="flex-1 cursor-pointer">
-              <h3 className="font-semibold text-lg text-foreground mb-1">Sou Professor</h3>
-              <p className="text-sm text-gray-500">Compartilhe conhecimento e inspire alunos</p>
+              <h3 className="font-semibold text-lg text-foreground mb-1">Sou Instituição</h3>
+              <p className="text-sm text-gray-500">Cadastre sua instituição de ensino</p>
             </div>
           </div>
         </button>
+        {/* === Fim do Bloco Modificado === */}
 
         <button
           onClick={() => router.push("/register/company")}

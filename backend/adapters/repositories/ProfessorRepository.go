@@ -1,8 +1,8 @@
+// backend/application/repositories/professor_repository.go
 package repositories
 
 import (
 	"backend/application/model"
-
 	"gorm.io/gorm"
 )
 
@@ -14,34 +14,46 @@ func NewProfessorRepository(db *gorm.DB) *ProfessorRepository {
 	return &ProfessorRepository{db: db}
 }
 
-func (r *ProfessorRepository) Create(professor *model.Professor) error {
-	return r.db.Create(professor).Error
+// CreateWithTx cria um professor dentro de uma transação (usado pelo InstituicaoService)
+func (r *ProfessorRepository) CreateWithTx(tx *gorm.DB, professor *model.Professor) error {
+	return tx.Create(professor).Error
 }
 
-func (r *ProfessorRepository) FindByUserID(userID uint) (*model.Professor, error) {
-	var professor model.Professor
-	err := r.db.Preload("User").Preload("InstituicaoEnsino").Where("user_id = ?", userID).First(&professor).Error
-	if err != nil {
-		return nil, err
-	}
-	return &professor, nil
-}
-
+// FindByID (com User)
 func (r *ProfessorRepository) FindByID(id uint) (*model.Professor, error) {
 	var professor model.Professor
-	err := r.db.Preload("User").Preload("InstituicaoEnsino").First(&professor, id).Error
-	if err != nil {
-		return nil, err
-	}
-	return &professor, nil
+	// Preload("User") traz os dados do usuário associado
+	err := r.db.Preload("User").First(&professor, id).Error
+	return &professor, err
 }
 
+// FindByUserID (com User)
+func (r *ProfessorRepository) FindByUserID(userID uint) (*model.Professor, error) {
+	var professor model.Professor
+	err := r.db.Preload("User").Where("user_id = ?", userID).First(&professor).Error
+	return &professor, err
+}
+
+// FindByCPF
+func (r *ProfessorRepository) FindByCPF(cpf string) (*model.Professor, error) {
+	var professor model.Professor
+	err := r.db.Where("cpf = ?", cpf).First(&professor).Error
+	return &professor, err
+}
+
+// FindByInstituicaoID lista todos os professores de uma instituição
+func (r *ProfessorRepository) FindByInstituicaoID(instID uint) ([]model.Professor, error) {
+	var professores []model.Professor
+	err := r.db.Preload("User").Where("instituicao_ensino_id = ?", instID).Find(&professores).Error
+	return professores, err
+}
+
+// Update
 func (r *ProfessorRepository) Update(professor *model.Professor) error {
 	return r.db.Save(professor).Error
 }
 
-func (r *ProfessorRepository) List() ([]model.Professor, error) {
-	var professores []model.Professor
-	err := r.db.Preload("User").Preload("InstituicaoEnsino").Find(&professores).Error
-	return professores, err
+// DeleteWithTx deleta um professor dentro de uma transação
+func (r *ProfessorRepository) DeleteWithTx(tx *gorm.DB, id uint) error {
+	return tx.Delete(&model.Professor{}, id).Error
 }
