@@ -1,35 +1,31 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/auth-layout"
 import TextField from "@/components/text-field"
 import SelectField from "@/components/select-field"
 import Button from "@/components/button"
 import Link from "next/link"
-import { getAllInstituicoes } from "@/api/instituicoesApi"
-import { Institution } from "@/types"
 
-const mockCourses = [
+const mockInstitutions = [
+  { value: "puc", label: "PUC Minas" },
+  { value: "ufmg", label: "UFMG" },
+  { value: "uemg", label: "UEMG" },
+]
+
+// Usando os mesmos mocks para departamentos, mas poderia ser uma lista diferente
+const mockDepartments = [
   { value: "eng-software", label: "Engenharia de Software" },
   { value: "ciencia-comp", label: "Ciência da Computação" },
   { value: "sistemas-info", label: "Sistemas de Informação" },
   { value: "adm", label: "Administração" },
 ]
 
-export default function StudentRegisterPage() {
+export default function ProfessorRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [instituicoes, setInstituicoes] = useState<Institution[]>([])
-  
-  useEffect(() => {
-    const fetchInstituicoes = async () => {
-      const instituicoes = await getAllInstituicoes()
-      setInstituicoes(instituicoes)
-    }
-    fetchInstituicoes()
-  }, [])
 
   const [formData, setFormData] = useState({
     name: "",
@@ -40,7 +36,7 @@ export default function StudentRegisterPage() {
     rg: "",
     address: "",
     institution: "",
-    course: "",
+    course: "", // Mantido como 'course' no estado, mas representa 'departamento'
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +50,7 @@ export default function StudentRegisterPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register/aluno", {
+      const response = await fetch("http://localhost:8080/api/auth/register/professor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,19 +60,19 @@ export default function StudentRegisterPage() {
           cpf: formData.cpf,
           rg: formData.rg,
           endereco: formData.address,
-          instituicao_ensino_id: 1,
-          curso: formData.course,
+          instituicao_ensino_id: 1, // Mantendo o ID fixo como no exemplo do aluno
+          departamento: formData.course, // Enviando como 'departamento'
         }),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        alert(data.error || "Erro ao criar aluno")
+        alert(data.error || "Erro ao criar professor")
         setLoading(false)
         return
       }
 
-      alert("Aluno criado com sucesso!")
+      alert("Professor criado com sucesso!")
       router.push("/login")
     } catch (err) {
       console.error(err)
@@ -85,14 +81,12 @@ export default function StudentRegisterPage() {
     }
   }
 
-
-
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (
-    <AuthLayout title="Cadastro de Aluno" subtitle="Preencha seus dados para criar sua conta">
+    <AuthLayout title="Cadastro de Professor" subtitle="Preencha seus dados para criar sua conta">
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-2">
           <TextField
@@ -142,22 +136,17 @@ export default function StudentRegisterPage() {
             label="Instituição de Ensino"
             value={formData.institution}
             onChange={(v) => updateField("institution", v)}
-            options={
-              instituicoes.map((instituicao) => ({
-                value: instituicao.id,
-                label: instituicao.nome,
-              }))
-            }
+            options={mockInstitutions}
             placeholder="Selecione sua instituição"
             required
           />
 
           <SelectField
-            label="Curso"
+            label="Departamento"
             value={formData.course}
             onChange={(v) => updateField("course", v)}
-            options={mockCourses}
-            placeholder="Selecione seu curso"
+            options={mockDepartments}
+            placeholder="Selecione seu departamento"
             required
           />
 

@@ -35,6 +35,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			aluno.POST("/resgatar-vantagem", c.VantagemController.ResgatarVantagem)
 			aluno.PUT("", c.AlunoController.UpdatePerfil)    
 			aluno.DELETE("", c.AlunoController.DeletePerfil) 
+			aluno.PATCH("/saldo", c.AlunoController.UpdateSaldo)
 		}
 
 		// ===========================
@@ -62,6 +63,11 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			empresa.DELETE("/vantagens/:id", c.EmpresaController.DeletarVantagem)
 			empresa.GET("/vantagens", c.EmpresaController.ListVantagens)
 			empresa.GET("/resgates", c.EmpresaController.ListResgates)
+		}
+
+		instituicao := protected.Group("/instituicao")
+		instituicao.Use(middlewares.RoleMiddleware("instituicao"))
+		{
 		}
 	}
 }

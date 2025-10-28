@@ -31,7 +31,7 @@ func main() {
 		AllowOriginFunc: func(origin string) bool {
             return strings.HasPrefix(origin, "http://localhost:")
         },
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,

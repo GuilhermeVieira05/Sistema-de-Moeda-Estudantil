@@ -15,6 +15,7 @@ type UpdateAlunoInput struct {
 	RG       string `json:"rg"`
 	Endereco string `json:"endereco"`
 	Curso    string `json:"curso"`
+	SaldoMoedas int    `json:"saldo_moedas"`
 }
 
 type AlunoService struct {
@@ -106,6 +107,7 @@ func (s *AlunoService) UpdateAlunoPerfil(userID uint, input *UpdateAlunoInput) (
 	aluno.RG = input.RG
 	aluno.Endereco = input.Endereco
 	aluno.Curso = input.Curso
+	aluno.SaldoMoedas = input.SaldoMoedas
 
 	aluno.User.Email = input.Email
 

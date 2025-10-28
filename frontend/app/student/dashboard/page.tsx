@@ -9,12 +9,6 @@ import { getAlunoData } from "@/api/alunoApi"
 import { useEffect, useState } from "react"
 import LoadingSpinner from "@/components/loading-spinner"
 
-// Mock data
-const mockStudent = {
-  name: "João Silva",
-  balance: 850,
-}
-
 const mockRecentTransactions: Transaction[] = [
   {
     id: "1",
@@ -87,7 +81,7 @@ export default function StudentDashboard() {
 
       try {
         const alunoBuscado = await getAlunoData(); 
-
+        console.log(alunoBuscado)
         if(alunoBuscado === null) {
           setError("Não foi possível carregar os dados do aluno.");
           setAluno(null);
@@ -126,7 +120,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={mockStudent.balance}>
+    <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={aluno.saldo_moedas ?? 0}>
       <div className="space-y-8">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
           <h1 className="text-4xl font-bold mb-3">Bem-vindo, {handleName(aluno.nome)}!</h1>
@@ -137,7 +131,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             title="Saldo Atual"
-            value={mockStudent.balance}
+            value={aluno.saldo_moedas}
             icon={
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -192,7 +186,7 @@ export default function StudentDashboard() {
                 key={advantage.id}
                 advantage={advantage}
                 onRedeem={handleRedeem}
-                userBalance={mockStudent.balance}
+                userBalance={aluno.saldo_moedas}
               />
             ))}
           </div>

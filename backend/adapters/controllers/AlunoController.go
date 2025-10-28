@@ -11,6 +11,10 @@ type AlunoController struct {
 	alunoService *services.AlunoService
 }
 
+type UpdateSaldoRequest struct {
+    Valor int `json:"valor" binding:"required"` 
+}
+
 func NewAlunoController(alunoService *services.AlunoService) *AlunoController {
 	return &AlunoController{alunoService: alunoService}
 }
@@ -80,4 +84,34 @@ func (h *AlunoController) ListAlunos(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, alunos)
+}
+
+func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
+    userID := ctx.GetUint("user_id")
+
+    // 2. Faz o parse do body
+    var req UpdateSaldoRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Requisição inválida: " + err.Error()})
+        return
+    }
+
+    // 3. Chama o Service (que você já criou)
+    err := c.alunoService.UpdateSaldo(userID, req.Valor)
+    if err != nil {
+        if err.Error() == "saldo insuficiente" {
+            ctx.JSON(http.StatusConflict, gin.H{"error": "Saldo insuficiente"})
+            return
+        }
+        ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar saldo: " + err.Error()})
+        return
+    }
+
+    aluno, err := c.alunoService.GetAlunoByID(userID)
+    if err != nil {
+         ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Saldo atualizado, mas falha ao buscar perfil"})
+         return
+    }
+
+    ctx.JSON(http.StatusOK, aluno)
 }

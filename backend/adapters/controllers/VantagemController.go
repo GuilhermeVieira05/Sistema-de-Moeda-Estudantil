@@ -42,10 +42,6 @@ func (h *VantagemController) ResgatarVantagem(c *gin.Context) {
 		return
 	}
 
-	// Buscar aluno pelo userID (será implementado no service)
-	// Por enquanto, vamos assumir que temos o alunoID
-	// Em produção, você precisaria buscar o aluno pelo userID primeiro
-
 	resgate, err := h.resgateService.ResgatarVantagem(userID, req.VantagemID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

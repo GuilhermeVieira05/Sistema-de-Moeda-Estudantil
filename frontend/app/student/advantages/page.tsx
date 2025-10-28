@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import AdvantageCard from "@/components/advantage-card"
-import type { Advantage } from "@/types"
+import { Student, type Advantage } from "@/types"
+import { getAlunoData, updateAluno, updateAlunoSaldo } from "@/api/alunoApi"
+import LoadingSpinner from "@/components/loading-spinner"
 
+// Os mocks (mockStudent, mockAdvantages) permanecem os mesmos...
 const mockStudent = {
   name: "João Silva",
   balance: 850,
@@ -70,6 +73,27 @@ const mockAdvantages: Advantage[] = [
 export default function StudentAdvantagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [aluno, setAluno] = useState<Student | null>(null)
+  const [redeemingId, setRedeemingId] = useState<string | null>(null) 
+
+  useEffect(() => {
+    const fetchAluno = async () => {
+      try {
+        const alunoBuscado = await getAlunoData()
+        console.log(alunoBuscado)
+        if (alunoBuscado === null) {
+          setAluno(null)
+        } else {
+          setAluno(alunoBuscado)
+        }
+      } catch (err: any) {
+        console.error("Erro ao buscar aluno:", err)
+        setAluno(null)
+      }
+    }
+
+    fetchAluno()
+  }, [])
 
   const filteredAdvantages = mockAdvantages.filter((advantage) => {
     const matchesSearch =
@@ -78,14 +102,51 @@ export default function StudentAdvantagesPage() {
     return matchesSearch
   })
 
-  const handleRedeem = (advantage: Advantage) => {
-    if (mockStudent.balance >= advantage.cost) {
-      alert(`Resgatando: ${advantage.title}\n\nUm email com o cupom será enviado para você!`)
+  const handleRedeem = async (advantage: Advantage) => {
+    if (redeemingId) return
+    if (!aluno) {
+      alert("Erro: Dados do aluno não carregados. Tente recarregar a página.")
+      return
+    }
+
+    if (aluno.saldo_moedas < advantage.cost) {
+      alert("Saldo insuficiente para resgatar esta vantagem.")
+      return
+    }
+
+    const confirmed = confirm(
+      `Você tem certeza que quer resgatar "${advantage.title}" por ${advantage.cost} moedas?`,
+    )
+    if (!confirmed) {
+      return
+    }
+
+    setRedeemingId(advantage.id) // Ativa o loading
+
+    try {
+      const valorDebito = -advantage.cost;
+
+      const alunoAtualizado = await updateAlunoSaldo(valorDebito);
+
+      setAluno(alunoAtualizado);
+
+      alert(
+        `Vantagem "${advantage.title}" resgatada com sucesso!\n\nUm email com o cupom será enviado para você!`,
+      )
+    } catch (err: any) { 
+      console.error("Erro ao resgatar vantagem:", err)
+      alert(err.message || "Não foi possível resgatar a vantagem. Tente novamente.")
+    } finally {
+      setRedeemingId(null) 
     }
   }
 
+  if (!aluno) {
+    return <LoadingSpinner />
+  }
+
   return (
-    <DashboardLayout userType="student" userName={mockStudent.name} balance={mockStudent.balance}>
+    <DashboardLayout userType="student" userName={aluno.nome} balance={aluno.saldo_moedas}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Vantagens Disponíveis</h1>
@@ -126,7 +187,8 @@ export default function StudentAdvantagesPage() {
               key={advantage.id}
               advantage={advantage}
               onRedeem={handleRedeem}
-              userBalance={mockStudent.balance}
+              userBalance={aluno.saldo_moedas}
+              isLoading={redeemingId === advantage.id} 
             />
           ))}
         </div>
