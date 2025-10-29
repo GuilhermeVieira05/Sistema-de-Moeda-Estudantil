@@ -5,6 +5,7 @@ import (
 	"backend/config"
 	"backend/container"
 	"log"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	if err := config.RunMigrations(db); err != nil {
-		log.Fatalf("❌ Falha ao migrar o banco de dados: %v", err)
+		log.Printf("❌ Falha ao migrar o banco de dados: %v", err)
 	}
 
 	c := container.NewContainer(db, cfg)
@@ -27,15 +28,17 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // endereço do frontend
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowOriginFunc: func(origin string) bool {
+            return strings.HasPrefix(origin, "http://localhost:")
+        },
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
 
 	routes.SetupRoutes(r, c)
-	
+
 	log.Println("🚀 Servidor iniciado na porta 8080")
 	r.Run(":8080")
 }

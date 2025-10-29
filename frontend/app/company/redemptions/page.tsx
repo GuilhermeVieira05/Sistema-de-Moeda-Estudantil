@@ -81,23 +81,23 @@ export default function CompanyRedemptionsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Resgates</h1>
-          <p className="text-muted">Acompanhe e confirme os resgates das suas vantagens</p>
+          <p className="text-gray-500">Acompanhe e confirme os resgates das suas vantagens</p>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Total de Resgates</p>
+            <p className="text-md text-blue-600 mb-1">Total de Resgates</p>
             <p className="text-3xl font-bold text-foreground">{totalRedemptions}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Pendentes</p>
-            <p className="text-3xl font-bold text-warning">{pendingRedemptions}</p>
+            <p className="text-md text-blue-600 text-bold mb-1">Pendentes</p>
+            <p className="text-3xl font-bold text-">{pendingRedemptions}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Concluídos</p>
+            <p className="text-md text-blue-600 text-bold mb-1">Concluídos</p>
             <p className="text-3xl font-bold text-success">{completedRedemptions}</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function CompanyRedemptionsPage() {
             <button
               onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "all" ? "bg-primary text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "all" ? "bg-primary text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Todos
@@ -116,7 +116,7 @@ export default function CompanyRedemptionsPage() {
             <button
               onClick={() => setFilter("pending")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "pending" ? "bg-warning text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "pending" ? "bg-warning text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Pendentes
@@ -124,7 +124,7 @@ export default function CompanyRedemptionsPage() {
             <button
               onClick={() => setFilter("completed")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "completed" ? "bg-success text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "completed" ? "bg-success text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Concluídos

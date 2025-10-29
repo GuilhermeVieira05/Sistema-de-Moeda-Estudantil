@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import StatCard from "@/components/stat-card"
 import AdvantageCard from "@/components/advantage-card"
@@ -8,78 +9,136 @@ import Button from "@/components/button"
 import { useRouter } from "next/navigation"
 import type { Advantage, Redemption } from "@/types"
 
-const mockCompany = {
-  name: "Tech Store",
-  email: "contato@techstore.com",
-}
-
-const mockAdvantages: Advantage[] = [
-  {
-    id: "1",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "15% em acessórios tech",
-    description: "Desconto em mouses, teclados, fones e mais",
-    cost: 300,
-    imageUrl: "/tech-accessories.png",
-  },
-  {
-    id: "2",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "R$ 100 em produtos",
-    description: "Vale-compra para qualquer produto da loja",
-    cost: 800,
-    imageUrl: "/tech-store-products.jpg",
-  },
-]
-
-const mockRecentRedemptions: Redemption[] = [
-  {
-    id: "1",
-    advantageId: "1",
-    advantageTitle: "15% em acessórios tech",
-    studentName: "João Silva",
-    studentEmail: "joao@email.com",
-    date: "05/01/2025",
-    code: "TECH-A1B2C3",
-    status: "pending",
-  },
-  {
-    id: "2",
-    advantageId: "2",
-    advantageTitle: "R$ 100 em produtos",
-    studentName: "Maria Santos",
-    studentEmail: "maria@email.com",
-    date: "03/01/2025",
-    code: "TECH-D4E5F6",
-    status: "completed",
-  },
-]
-
 export default function CompanyDashboard() {
   const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [company, setCompany] = useState<any>(null)
+  const [advantages, setAdvantages] = useState<Advantage[]>([])
+  const [redemptions, setRedemptions] = useState<Redemption[]>([])
+
+  // 🔹 Busca o nome da empresa e as vantagens pelo token
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        if (!token) {
+          alert("Token não encontrado. Faça login novamente.")
+          return
+        }
+
+        // Buscar perfil da empresa
+        const profileRes = await fetch("http://localhost:8080/api/empresa/perfil", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!profileRes.ok) throw new Error("Erro ao buscar perfil da empresa")
+
+        const profileData = await profileRes.json()
+        setCompany(profileData)
+
+        // Buscar vantagens
+        const advantagesRes = await fetch("http://localhost:8080/api/empresa/vantagens", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (advantagesRes.ok) {
+          const data = await advantagesRes.json()
+          if (Array.isArray(data)) {
+            setAdvantages(data)
+          } else {
+            console.warn("⚠️ Resposta inesperada de vantagens:", data)
+            setAdvantages([])
+          }
+        }
+
+        // Buscar resgates
+        const redemptionsRes = await fetch("http://localhost:8080/api/empresa/resgates", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (redemptionsRes.ok) {
+          const data = await redemptionsRes.json()
+          // 🔹 Trata qualquer formato de resposta (objeto ou array)
+          if (Array.isArray(data)) {
+            setRedemptions(data)
+          } else if (Array.isArray(data.resgates)) {
+            setRedemptions(data.resgates)
+          } else {
+            console.warn("⚠️ Resposta inesperada de resgates:", data)
+            setRedemptions([])
+          }
+        }
+      } catch (err) {
+        console.error("❌ Erro ao carregar dados:", err)
+        alert("Erro ao carregar dados da empresa.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleCompleteRedemption = (redemption: Redemption) => {
     alert(`Resgate confirmado!\n\nCódigo: ${redemption.code}\nAluno: ${redemption.studentName}`)
   }
 
+  if (loading) {
+    return (
+      <DashboardLayout userType="company" userName="Carregando...">
+        <div className="text-center mt-20 text-gray-500">Carregando informações...</div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!company) {
+    return (
+      <DashboardLayout userType="company" userName="Erro">
+        <div className="text-center mt-20 text-red-500">
+          Erro ao carregar os dados da empresa.
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // 🔹 Garante que redemptions sempre seja um array antes de usar filter
+  const redemptionsArray = Array.isArray(redemptions) ? redemptions : []
+  const pendingCount = redemptionsArray.filter((r) => r.status === "pending").length
+
   return (
-    <DashboardLayout userType="company" userName={mockCompany.name}>
+    <DashboardLayout userType="company" userName={company.nome || "Empresa"}>
       <div className="space-y-8">
         {/* Welcome Section */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Bem-vindo, {mockCompany.name}!</h1>
-          <p className="text-muted">Gerencie suas vantagens e acompanhe os resgates</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Bem-vindo, {company.nome}!
+          </h1>
+          <p className="text-gray-500">
+            Gerencie suas vantagens e acompanhe os resgates
+          </p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             title="Vantagens Ativas"
-            value={mockAdvantages.length}
+            value={advantages.length}
             icon={
-              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -92,9 +151,14 @@ export default function CompanyDashboard() {
 
           <StatCard
             title="Total de Resgates"
-            value={127}
+            value={redemptionsArray.length}
             icon={
-              <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-success"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -103,14 +167,18 @@ export default function CompanyDashboard() {
                 />
               </svg>
             }
-            trend={{ value: "+12 este mês", positive: true }}
           />
 
           <StatCard
-            title="Resgates Pendentes"
-            value={3}
+            title="Pendentes"
+            value={pendingCount}
             icon={
-              <svg className="w-6 h-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-warning"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -127,12 +195,27 @@ export default function CompanyDashboard() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">Cadastre novas vantagens</h2>
-              <p className="text-white/90">Atraia mais estudantes oferecendo benefícios exclusivos</p>
+              <p className="text-white/90">
+                Atraia mais estudantes oferecendo benefícios exclusivos
+              </p>
             </div>
-            <Button variant="secondary" onClick={() => router.push("/company/advantages/new")}>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/company/advantages/new")}
+            >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Nova Vantagem
               </div>
@@ -144,15 +227,25 @@ export default function CompanyDashboard() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Minhas Vantagens</h2>
-            <a href="/company/advantages" className="text-primary font-medium hover:underline">
+            <a
+              href="/company/advantages"
+              className="text-primary font-medium hover:underline"
+            >
               Ver todas
             </a>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockAdvantages.map((advantage) => (
-              <AdvantageCard key={advantage.id} advantage={advantage} />
-            ))}
+            {advantages.map((advantage, index) => (
+  <AdvantageCard
+    key={advantage.id ?? `adv-${index}`}
+    advantage={{
+      ...advantage,
+      id: String(advantage.id ?? index),
+    }}
+  />
+))}
+
           </div>
         </div>
 
@@ -160,15 +253,28 @@ export default function CompanyDashboard() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Resgates Recentes</h2>
-            <a href="/company/redemptions" className="text-primary font-medium hover:underline">
+            <a
+              href="/company/redemptions"
+              className="text-primary font-medium hover:underline"
+            >
               Ver todos
             </a>
           </div>
 
           <div className="bg-white rounded-xl border border-border divide-y divide-border">
-            {mockRecentRedemptions.map((redemption) => (
-              <RedemptionItem key={redemption.id} redemption={redemption} onComplete={handleCompleteRedemption} />
-            ))}
+            {redemptionsArray.length > 0 ? (
+              redemptionsArray.map((r) => (
+                <RedemptionItem
+                  key={r.id}
+                  redemption={r}
+                  onComplete={handleCompleteRedemption}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-6">
+                Nenhum resgate encontrado
+              </p>
+            )}
           </div>
         </div>
       </div>

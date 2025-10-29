@@ -11,6 +11,10 @@ type AlunoController struct {
 	alunoService *services.AlunoService
 }
 
+type UpdateSaldoRequest struct {
+    Valor int `json:"valor" binding:"required"` 
+}
+
 func NewAlunoController(alunoService *services.AlunoService) *AlunoController {
 	return &AlunoController{alunoService: alunoService}
 }
@@ -25,6 +29,39 @@ func (h *AlunoController) GetPerfil(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, aluno)
+}
+
+func (h *AlunoController) UpdatePerfil(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	var input services.UpdateAlunoInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedAluno, err := h.alunoService.UpdateAlunoPerfil(userID, &input)
+	if err != nil {
+		if err.Error() == "email já está em uso por outra conta" || err.Error() == "CPF já está em uso por outra conta" {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar perfil"})
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedAluno)
+}
+
+func (h *AlunoController) DeletePerfil(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	if err := h.alunoService.DeleteAlunoPerfil(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Aluno e usuário associado deletados com sucesso"})
 }
 
 func (h *AlunoController) GetExtrato(c *gin.Context) {
@@ -47,4 +84,34 @@ func (h *AlunoController) ListAlunos(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, alunos)
+}
+
+func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
+    userID := ctx.GetUint("user_id")
+
+    // 2. Faz o parse do body
+    var req UpdateSaldoRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Requisição inválida: " + err.Error()})
+        return
+    }
+
+    // 3. Chama o Service (que você já criou)
+    err := c.alunoService.UpdateSaldo(userID, req.Valor)
+    if err != nil {
+        if err.Error() == "saldo insuficiente" {
+            ctx.JSON(http.StatusConflict, gin.H{"error": "Saldo insuficiente"})
+            return
+        }
+        ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar saldo: " + err.Error()})
+        return
+    }
+
+    aluno, err := c.alunoService.GetAlunoByID(userID)
+    if err != nil {
+         ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Saldo atualizado, mas falha ao buscar perfil"})
+         return
+    }
+
+    ctx.JSON(http.StatusOK, aluno)
 }

@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"backend/application/services"
 	"backend/application/model"
+	"backend/application/services"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -187,5 +188,38 @@ func (h *EmpresaParceiraController) ListResgates(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"empresa_id": empresa.ID,
 		"message":    "Lista de resgates",
+	})
+}
+
+func (h *EmpresaParceiraController) AtualizarEmpresa(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	fmt.Println("UserID:", c)
+	var req struct {
+		Nome     string `json:"nome"`
+		Endereco string `json:"endereco"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
+		return
+	}
+
+	empresa, err := h.empresaService.GetEmpresaByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Empresa não encontrada"})
+		return
+	}
+
+	empresa.Nome = req.Nome
+	empresa.Endereco = req.Endereco
+
+	if err := h.empresaService.UpdateEmpresa(empresa); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar empresa"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Empresa atualizada com sucesso",
+		"empresa": empresa,
 	})
 }

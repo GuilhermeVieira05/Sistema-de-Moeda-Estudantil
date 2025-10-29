@@ -38,6 +38,7 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
           { label: "Dashboard", href: "/student/dashboard", icon: "home" },
           { label: "Vantagens", href: "/student/advantages", icon: "gift" },
           { label: "Extrato", href: "/student/transactions", icon: "list" },
+          { label: "Perfil", href: "/student/perfil", icon: "user" },
         ]
       case "professor":
         return [
@@ -50,6 +51,7 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
           { label: "Dashboard", href: "/company/dashboard", icon: "home" },
           { label: "Vantagens", href: "/company/advantages", icon: "gift" },
           { label: "Resgates", href: "/company/redemptions", icon: "check" },
+          { label: "Minha Empresa", href: "/company/myCompany", icon: "check" },
         ]
       case "admin":
         return [
@@ -89,7 +91,7 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
                 <a
                   key={item.href}
                   href={item.href}
-                  className="text-muted hover:text-foreground transition-colors font-medium"
+                  className="text-gray-500 hover:text-foreground transition-colors font-medium"
                 >
                   {item.label}
                 </a>
@@ -115,15 +117,15 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
               <div className="flex items-center gap-3">
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-medium text-foreground">{userName}</p>
-                  <p className="text-xs text-muted capitalize">{getUserTypeLabel()}</p>
+                  <p className="text-xs text-gray-500 capitalize">{getUserTypeLabel()}</p>
                 </div>
 
                 <button
                   onClick={handleLogout}
-                  className="p-2 hover:bg-surface rounded-lg transition-colors"
+                  className="p-2 cursor-pointer hover:bg-surface text-gray-500 rounded-lg transition-colors"
                   title="Sair"
                 >
-                  <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

@@ -54,3 +54,7 @@ func (r *AlunoRepository) List() ([]model.Aluno, error) {
 	err := r.db.Preload("User").Preload("InstituicaoEnsino").Find(&alunos).Error
 	return alunos, err
 }
+
+func (r *AlunoRepository) Delete(id uint) error {
+	return r.db.Delete(&model.Aluno{}, id).Error
+}

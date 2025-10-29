@@ -1,34 +1,44 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import AdvantageCard from "@/components/advantage-card"
-import type { Advantage } from "@/types"
-
-const mockStudent = {
-  name: "João Silva",
-  balance: 8500, // ajustei pra testar com valores altos
-}
+import { Student, type Advantage } from "@/types"
+import { getAlunoData, updateAlunoSaldo } from "@/api/alunoApi"
+import LoadingSpinner from "@/components/loading-spinner"
 
 export default function StudentAdvantagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [aluno, setAluno] = useState<Student | null>(null)
   const [advantages, setAdvantages] = useState<Advantage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [redeemingId, setRedeemingId] = useState<string | null>(null)
+
+  // 🔹 Buscar dados do aluno
+  useEffect(() => {
+    const fetchAluno = async () => {
+      try {
+        const alunoBuscado = await getAlunoData()
+        setAluno(alunoBuscado)
+      } catch (err: any) {
+        console.error("Erro ao buscar aluno:", err)
+        setAluno(null)
+      }
+    }
+
+    fetchAluno()
+  }, [])
 
   // 🔹 Buscar vantagens do backend
   useEffect(() => {
     const fetchAdvantages = async () => {
       try {
         const response = await fetch("http://localhost:8080/api/vantagens")
-        if (!response.ok) {
-          throw new Error(`Erro ao buscar vantagens: ${response.status}`)
-        }
-
+        if (!response.ok) throw new Error(`Erro ao buscar vantagens: ${response.status}`)
         const data = await response.json()
 
-        // 🔹 Mapeia os dados do backend para o formato do componente
         const mappedAdvantages: Advantage[] = data.map((item: any) => ({
           id: String(item.ID),
           companyId: String(item.empresa_parceira_id),
@@ -60,44 +70,48 @@ export default function StudentAdvantagesPage() {
 
   // 🎁 Resgatar vantagem
   const handleRedeem = async (advantage: Advantage) => {
-    if (mockStudent.balance < advantage.cost) {
+    if (redeemingId) return
+    if (!aluno) {
+      alert("Erro: Dados do aluno não carregados. Tente recarregar a página.")
+      return
+    }
+
+    if (aluno.saldo_moedas < advantage.cost) {
       alert("Saldo insuficiente para resgatar esta vantagem.")
       return
     }
 
+    const confirmed = confirm(
+      `Você tem certeza que quer resgatar "${advantage.title}" por ${advantage.cost} moedas?`,
+    )
+    if (!confirmed) return
+
+    setRedeemingId(advantage.id)
+
     try {
-      const token = localStorage.getItem("token") 
-    
-      const response = await fetch("http://localhost:8080/api/aluno/resgatar-vantagem", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          vantagem_id: Number(advantage.id),
-        }),
-      })
-    
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText || "Falha ao resgatar vantagem")
-      }
-    
-      const data = await response.json()
-      alert(`🎉 Vantagem resgatada com sucesso!\n\nCódigo do cupom: ${data.resgate?.codigo_cupom || "N/A"}`)
-    } catch (error: any) {
-      alert(`❌ Erro: ${error.message}`)
+      const valorDebito = -advantage.cost
+      const alunoAtualizado = await updateAlunoSaldo(valorDebito)
+      setAluno(alunoAtualizado)
+
+      alert(
+        `Vantagem "${advantage.title}" resgatada com sucesso!\n\nUm email com o cupom será enviado para você!`,
+      )
+    } catch (err: any) {
+      console.error("Erro ao resgatar vantagem:", err)
+      alert(err.message || "Não foi possível resgatar a vantagem. Tente novamente.")
+    } finally {
+      setRedeemingId(null)
     }
-    
   }
 
+  if (!aluno) return <LoadingSpinner />
+
   return (
-    <DashboardLayout userType="student" userName={mockStudent.name} balance={mockStudent.balance}>
+    <DashboardLayout userType="student" userName={aluno.nome} balance={aluno.saldo_moedas}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Vantagens Disponíveis</h1>
-          <p className="text-muted">Resgate vantagens incríveis com suas moedas</p>
+          <p className="text-gray-500">Resgate vantagens incríveis com suas moedas</p>
         </div>
 
         {/* Search and Filters */}
@@ -139,7 +153,8 @@ export default function StudentAdvantagesPage() {
                 key={advantage.id}
                 advantage={advantage}
                 onRedeem={handleRedeem}
-                userBalance={mockStudent.balance}
+                userBalance={aluno.saldo_moedas}
+                isLoading={redeemingId === advantage.id}
               />
             ))}
           </div>

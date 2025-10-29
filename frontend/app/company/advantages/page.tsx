@@ -1,85 +1,86 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import AdvantageCard from "@/components/advantage-card"
 import Button from "@/components/button"
 import { useRouter } from "next/navigation"
-import type { Advantage } from "@/types"
 
-const mockCompany = {
-  name: "Tech Store",
-  email: "contato@techstore.com",
+interface Advantage {
+  id: number
+  titulo: string
+  descricao: string
+  foto_url: string
+  custo_moedas: number
 }
-
-const mockAdvantages: Advantage[] = [
-  {
-    id: "1",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "15% em acessórios tech",
-    description: "Desconto em mouses, teclados, fones e mais",
-    cost: 300,
-    imageUrl: "/tech-accessories.png",
-  },
-  {
-    id: "2",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "R$ 100 em produtos",
-    description: "Vale-compra para qualquer produto da loja",
-    cost: 800,
-    imageUrl: "/tech-store-products.jpg",
-  },
-  {
-    id: "3",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "Mouse Gamer",
-    description: "Mouse gamer RGB com 7 botões programáveis",
-    cost: 600,
-    imageUrl: "/gaming-mouse.png",
-  },
-  {
-    id: "4",
-    companyId: "1",
-    companyName: "Tech Store",
-    title: "Fone Bluetooth",
-    description: "Fone de ouvido sem fio com cancelamento de ruído",
-    cost: 700,
-    imageUrl: "/bluetooth-headphones.jpg",
-  },
-]
 
 export default function CompanyAdvantagesPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
+  const [advantages, setAdvantages] = useState<Advantage[]>([])
+  const [companyName, setCompanyName] = useState("Carregando...")
+  const [loading, setLoading] = useState(true)
 
-  const filteredAdvantages = mockAdvantages.filter((advantage) =>
-    advantage.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  useEffect(() => {
+    const fetchAdvantages = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        if (!token) {
+          alert("Token não encontrado. Faça login novamente.")
+          router.push("/login")
+          return
+        }
+
+        // 🔹 Buscar nome da empresa
+        const perfilRes = await fetch("http://localhost:8080/api/empresa/perfil", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!perfilRes.ok) throw new Error("Erro ao buscar perfil da empresa")
+        const perfilData = await perfilRes.json()
+        setCompanyName(perfilData.nome)
+
+        // 🔹 Buscar vantagens da empresa logada
+        const res = await fetch("http://localhost:8080/api/empresa/vantagens", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error("Erro ao buscar vantagens")
+        const data = await res.json()
+        setAdvantages(data)
+      } catch (err) {
+        console.error("Erro ao buscar vantagens:", err)
+        alert("Erro ao carregar vantagens.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAdvantages()
+  }, [router])
+
+  const filteredAdvantages = advantages.filter((adv) =>
+    adv.titulo.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleEdit = (advantage: Advantage) => {
-    alert(`Editar vantagem: ${advantage.title}`)
-  }
-
-  const handleDelete = (advantage: Advantage) => {
-    if (confirm(`Tem certeza que deseja excluir "${advantage.title}"?`)) {
-      alert("Vantagem excluída!")
-    }
+  if (loading) {
+    return (
+      <DashboardLayout userType="company" userName="Carregando...">
+        <div className="text-center py-20 text-gray-500">Carregando vantagens...</div>
+      </DashboardLayout>
+    )
   }
 
   return (
-    <DashboardLayout userType="company" userName={mockCompany.name}>
+    <DashboardLayout userType="company" userName={companyName}>
       <div className="space-y-6">
+        {/* Cabeçalho */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Vantagens</h1>
-            <p className="text-muted">Gerencie as vantagens oferecidas aos estudantes</p>
+            <p className="text-gray-500">Gerencie as vantagens oferecidas aos estudantes</p>
           </div>
 
           <Button onClick={() => router.push("/company/advantages/new")}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -88,7 +89,7 @@ export default function CompanyAdvantagesPage() {
           </Button>
         </div>
 
-        {/* Search */}
+        {/* Campo de busca */}
         <div className="bg-white rounded-xl p-6 border border-border">
           <input
             type="text"
@@ -99,52 +100,30 @@ export default function CompanyAdvantagesPage() {
           />
         </div>
 
-        {/* Advantages Grid */}
+        {/* Lista de vantagens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAdvantages.map((advantage) => (
-            <div key={advantage.id} className="relative group">
-              <AdvantageCard advantage={advantage} />
-
-              <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleEdit(advantage)}
-                  className="p-2 bg-white rounded-lg shadow-lg hover:bg-surface transition-colors"
-                  title="Editar"
-                >
-                  <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                </button>
-
-                <button
-                  onClick={() => handleDelete(advantage)}
-                  className="p-2 bg-white rounded-lg shadow-lg hover:bg-surface transition-colors"
-                  title="Excluir"
-                >
-                  <svg className="w-4 h-4 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </button>
-              </div>
+          {filteredAdvantages.length > 0 ? (
+            filteredAdvantages.map((adv, index) => (
+              <AdvantageCard
+                key={adv.id ?? `adv-${index}`}
+                advantage={{
+                  id: String(adv.id ?? index),
+                  companyId: "",
+                  companyName,
+                  title: adv.titulo,
+                  description: adv.descricao,
+                  cost: adv.custo_moedas,
+                  imageUrl: adv.foto_url || "/placeholder.svg",
+                }}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Nenhuma vantagem encontrada
             </div>
-          ))}
-        </div>
+          )}
 
-        {filteredAdvantages.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted">Nenhuma vantagem encontrada</p>
-          </div>
-        )}
+        </div>
       </div>
     </DashboardLayout>
   )

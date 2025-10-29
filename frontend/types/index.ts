@@ -3,7 +3,7 @@ export type UserType = "student" | "professor" | "company"
 export interface User {
   id: string
   email: string
-  name: string
+  nome: string
   type: UserType
 }
 
@@ -14,7 +14,7 @@ export interface Student extends User {
   address: string
   institution: string
   course: string
-  balance: number
+  saldo_moedas: number
 }
 
 export interface Professor extends User {
@@ -22,7 +22,7 @@ export interface Professor extends User {
   cpf: string
   department: string
   institution: string
-  balance: number
+  saldo_moedas: number
 }
 
 export interface Company extends User {
@@ -65,6 +65,6 @@ export interface Redemption {
 
 export interface Institution {
   id: string
-  name: string
+  nome: string
   courses: string[]
 }

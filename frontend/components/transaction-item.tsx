@@ -38,9 +38,9 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
 
         <div>
           <p className="font-medium text-foreground">{transaction.description}</p>
-          <p className="text-sm text-muted">{transaction.date}</p>
-          {transaction.from && <p className="text-xs text-muted">De: {transaction.from}</p>}
-          {transaction.to && <p className="text-xs text-muted">Para: {transaction.to}</p>}
+          <p className="text-sm text-gray-500">{transaction.date}</p>
+          {transaction.from && <p className="text-xs text-blue-600">De: {transaction.from}</p>}
+          {transaction.to && <p className="text-xs text-blue-600">Para: {transaction.to}</p>}
         </div>
       </div>
 
