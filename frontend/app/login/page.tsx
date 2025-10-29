@@ -37,7 +37,7 @@ export default function Page() {
       if (data.user.role === "aluno") {
         router.push("/student/dashboard")
       } else if (data.user.role === "empresa") {
-        router.push("/dashboard/empresa")
+        router.push("/company/dashboard")
       } else {
         router.push("/")
       }
