@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"backend/application/services"
+	"fmt"
 	"net/http"
+
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,6 +37,8 @@ type ResgatarVantagemRequest struct {
 
 func (h *VantagemController) ResgatarVantagem(c *gin.Context) {
 	userID := c.GetUint("user_id")
+
+	fmt.Println("UserID do Aluno:", userID)
 
 	var req ResgatarVantagemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

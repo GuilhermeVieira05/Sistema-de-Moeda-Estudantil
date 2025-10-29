@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -35,10 +36,16 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
+		
+		// ✅ Debug: mostrar o conteúdo do token e user_id
+		fmt.Println("JWT claims:", claims)
+		fmt.Println("User ID que será setado no contexto:", claims["user_id"])
+		
+		// Coloca o user_id e role no contexto
 		c.Set("user_id", uint(claims["user_id"].(float64)))
 		c.Set("role", claims["role"].(string))
 		c.Next()
+		
 	}
 }
 

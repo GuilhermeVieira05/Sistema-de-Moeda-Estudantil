@@ -11,10 +11,10 @@ import (
 )
 
 type ResgateVantagemService struct {
-	resgateRepo   *repositories.ResgateVantagemRepository
-	alunoRepo     *repositories.AlunoRepository
-	vantagemRepo  *repositories.VantagemRepository
-	emailService  *EmailService
+	resgateRepo  *repositories.ResgateVantagemRepository
+	alunoRepo    *repositories.AlunoRepository
+	vantagemRepo *repositories.VantagemRepository
+	emailService *EmailService
 }
 
 func NewResgateVantagemService(
@@ -24,16 +24,16 @@ func NewResgateVantagemService(
 	emailService *EmailService,
 ) *ResgateVantagemService {
 	return &ResgateVantagemService{
-		resgateRepo:   resgateRepo,
-		alunoRepo:     alunoRepo,
-		vantagemRepo:  vantagemRepo,
-		emailService:  emailService,
+		resgateRepo:  resgateRepo,
+		alunoRepo:    alunoRepo,
+		vantagemRepo: vantagemRepo,
+		emailService: emailService,
 	}
 }
 
-func (s *ResgateVantagemService) ResgatarVantagem(alunoID, vantagemID uint) (*model.ResgateVantagem, error) {
-	// Buscar aluno
-	aluno, err := s.alunoRepo.FindByID(alunoID)
+func (s *ResgateVantagemService) ResgatarVantagem(userID, vantagemID uint) (*model.ResgateVantagem, error) {
+	// Buscar aluno pelo user_id (do JWT)
+	aluno, err := s.alunoRepo.FindByUserID(userID)
 	if err != nil {
 		return nil, errors.New("aluno não encontrado")
 	}
@@ -63,9 +63,9 @@ func (s *ResgateVantagemService) ResgatarVantagem(alunoID, vantagemID uint) (*mo
 	// Gerar código do cupom
 	codigoCupom := s.gerarCodigoCupom()
 
-	// Criar resgate
+	// Criar resgate usando aluno.ID (FK correta)
 	resgate := &model.ResgateVantagem{
-		AlunoID:     alunoID,
+		AlunoID:     aluno.ID,
 		VantagemID:  vantagemID,
 		DataHora:    time.Now(),
 		CodigoCupom: codigoCupom,
@@ -93,6 +93,7 @@ func (s *ResgateVantagemService) ResgatarVantagem(alunoID, vantagemID uint) (*mo
 
 	return resgate, nil
 }
+
 
 func (s *ResgateVantagemService) GetResgatesAluno(alunoID uint) ([]model.ResgateVantagem, error) {
 	return s.resgateRepo.FindByAlunoID(alunoID)
