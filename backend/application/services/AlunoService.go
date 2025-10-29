@@ -9,12 +9,12 @@ import (
 )
 
 type UpdateAlunoInput struct {
-	Nome     string `json:"nome"`
-	Email    string `json:"email"`
-	CPF      string `json:"cpf"`
-	RG       string `json:"rg"`
-	Endereco string `json:"endereco"`
-	Curso    string `json:"curso"`
+	Nome        string `json:"nome"`
+	Email       string `json:"email"`
+	CPF         string `json:"cpf"`
+	RG          string `json:"rg"`
+	Endereco    string `json:"endereco"`
+	Curso       string `json:"curso"`
 	SaldoMoedas int    `json:"saldo_moedas"`
 }
 
@@ -22,6 +22,10 @@ type AlunoService struct {
 	alunoRepo    *repositories.AlunoRepository
 	userRepo     *repositories.UserRepository
 	emailService *EmailService
+}
+
+func (s *AlunoService) UpdateSaldo(userID uint, valor int) any {
+	panic("unimplemented")
 }
 
 func NewAlunoService(alunoRepo *repositories.AlunoRepository, userRepo *repositories.UserRepository, emailService *EmailService) *AlunoService {
@@ -49,17 +53,20 @@ func (s *AlunoService) GetAlunoByID(id uint) (*model.Aluno, error) {
 	return s.alunoRepo.FindByID(id)
 }
 
-func (s *AlunoService) UpdateSaldo(alunoID uint, valor int) error {
-	aluno, err := s.alunoRepo.FindByID(alunoID)
+func (s *AlunoService) UpdateSaldoByUserID(userID uint, valor int) error {
+	// Buscar aluno pelo user_id
+	aluno, err := s.alunoRepo.FindByUserID(userID)
 	if err != nil {
-		return err
+		return errors.New("aluno não encontrado")
 	}
 
+	// Atualizar saldo
 	aluno.SaldoMoedas += valor
 	if aluno.SaldoMoedas < 0 {
 		return errors.New("saldo insuficiente")
 	}
 
+	// Salvar no banco
 	return s.alunoRepo.Update(aluno)
 }
 
