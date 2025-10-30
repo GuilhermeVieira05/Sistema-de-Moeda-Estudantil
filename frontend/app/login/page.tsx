@@ -22,8 +22,10 @@ export default function Page() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // No backend, o handler de login deve verificar se 'login' é email ou cnpj
-        body: JSON.stringify({ login: loginField, password }), 
+        body: JSON.stringify({ email: loginField, password }), 
       })
+      console.log("Body", loginField, password)
+      console.log("Resposta do login:", res)
 
       const data = await res.json()
 

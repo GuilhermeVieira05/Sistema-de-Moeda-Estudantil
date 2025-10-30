@@ -1,13 +1,14 @@
 package controllers
 
 import (
-    "backend/application/model"
-    "backend/application/services"
-    "net/http"
+	"backend/application/model"
+	"backend/application/services"
+	"fmt"
+	"net/http"
 
-    "github.com/gin-gonic/gin"
-    "golang.org/x/crypto/bcrypt"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserController struct {
@@ -58,12 +59,15 @@ type RegisterInstituicaoRequest struct {
 }
 
 func (h *UserController) Login(c *gin.Context) {
+	fmt.Println("Login endpoint hit") // Linha de debug
     var req LoginRequest
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
+	fmt.Println("Login request received for email:", req.Email, req.Password) // Linha de debug
+	
     token, user, err := h.userService.Login(req.Email, req.Password)
     if err != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

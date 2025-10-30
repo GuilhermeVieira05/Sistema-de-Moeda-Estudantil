@@ -22,17 +22,19 @@ type AlunoService struct {
 	alunoRepo    *repositories.AlunoRepository
 	userRepo     *repositories.UserRepository
 	emailService *EmailService
+	transacaoRepo *repositories.TransacaoMoedaRepository
 }
 
 func (s *AlunoService) UpdateSaldo(userID uint, valor int) any {
 	panic("unimplemented")
 }
 
-func NewAlunoService(alunoRepo *repositories.AlunoRepository, userRepo *repositories.UserRepository, emailService *EmailService) *AlunoService {
+func NewAlunoService(alunoRepo *repositories.AlunoRepository, userRepo *repositories.UserRepository, emailService *EmailService, transacaoRepo *repositories.TransacaoMoedaRepository) *AlunoService {
 	return &AlunoService{
-		alunoRepo:    alunoRepo,
-		userRepo:     userRepo,
-		emailService: emailService,
+		alunoRepo:     alunoRepo,
+		userRepo:      userRepo,
+		emailService:  emailService,
+		transacaoRepo: transacaoRepo,
 	}
 }
 
@@ -83,9 +85,16 @@ func (s *AlunoService) GetExtrato(userID uint) (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	// Buscar transações do aluno
+	transacoes, err := s.transacaoRepo.FindByAlunoID(aluno.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return map[string]interface{}{
 		"aluno":        aluno,
 		"saldo_moedas": aluno.SaldoMoedas,
+		"transacoes":   transacoes,
 	}, nil
 }
 

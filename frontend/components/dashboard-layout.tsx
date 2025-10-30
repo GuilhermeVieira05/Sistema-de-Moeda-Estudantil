@@ -37,7 +37,7 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
         return [
           { label: "Dashboard", href: "/student/dashboard", icon: "home" },
           { label: "Vantagens", href: "/student/advantages", icon: "gift" },
-          { label: "Extrato", href: "/student/transactions", icon: "list" },
+          { label: "Extrato", href: "/student/transaction", icon: "list" },
           { label: "Perfil", href: "/student/perfil", icon: "user" },
         ]
       case "professor":

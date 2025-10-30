@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import TransactionItem from "@/components/transaction-item"
-import type { Transaction } from "@/types"
+import type { Student, Transaction } from "@/types"
+import { getAlunoData } from "@/api/alunoApi"
 
 const mockStudent = {
   name: "João Silva",
@@ -71,6 +72,40 @@ const mockTransactions: Transaction[] = [
 
 export default function StudentTransactionsPage() {
   const [filter, setFilter] = useState<"all" | "receive" | "redeem">("all")
+const [aluno, setAluno] = useState<Student|null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+     useEffect(() => {
+      const fetchAluno = async () => {
+        setIsLoading(true);
+        setError(null); 
+  
+        try {
+          const alunoBuscado = await getAlunoData(); 
+          console.log(alunoBuscado)
+          if(alunoBuscado === null) {
+            setError("Não foi possível carregar os dados do aluno.");
+            setAluno(null);
+          } else {
+            console.log("Dados do aluno buscados:", alunoBuscado); 
+            setAluno(alunoBuscado); 
+          }
+        } catch (err: any) {
+          console.error("Erro ao buscar aluno:", err);
+          setError(err.message || "Ocorreu um erro desconhecido ao carregar os dados.");
+          setAluno(null);
+        } finally {
+          setIsLoading(false); 
+        }
+      }
+      const fetchTransactions = async () => {
+        // Aqui você pode implementar a lógica para buscar as transações reais do backend
+        // Por enquanto, estamos usando as mockTransactions
+      }
+      fetchTransactions();
+      fetchAluno()
+    }, []) 
 
   const filteredTransactions = mockTransactions.filter((t) => filter === "all" || t.type === filter)
 

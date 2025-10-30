@@ -95,3 +95,9 @@ func (s *TransacaoMoedaService) GetExtratoAluno(alunoID uint) ([]model.Transacao
 func (s *TransacaoMoedaService) GetExtratoProfessor(professorID uint) ([]model.TransacaoMoeda, error) {
 	return s.transacaoRepo.FindByProfessorID(professorID)
 }
+
+
+func (s *TransacaoMoedaService) CreateTransacao(transacao *model.TransacaoMoeda) error {
+	return s.transacaoRepo.Create(transacao)
+}
+

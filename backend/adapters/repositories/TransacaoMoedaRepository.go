@@ -29,3 +29,9 @@ func (r *TransacaoMoedaRepository) FindByAlunoID(alunoID uint) ([]model.Transaca
 	err := r.db.Preload("Professor").Preload("Professor.User").Where("aluno_id = ?", alunoID).Order("data_hora DESC").Find(&transacoes).Error
 	return transacoes, err
 }
+
+func (r *TransacaoMoedaRepository) List() ([]model.TransacaoMoeda, error) {
+	var transacoes []model.TransacaoMoeda
+	err := r.db.Preload("Professor").Preload("Professor.User").Preload("Aluno").Preload("Aluno.User").Order("data_hora DESC").Find(&transacoes).Error
+	return transacoes, err
+}

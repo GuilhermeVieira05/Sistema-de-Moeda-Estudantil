@@ -1,22 +1,25 @@
 package controllers
 
 import (
+	"backend/application/model"
 	"backend/application/services"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AlunoController struct {
 	alunoService *services.AlunoService
+	transacaoService *services.TransacaoMoedaService
 }
 
 type UpdateSaldoRequest struct {
     Valor int `json:"valor" binding:"required"` 
 }
 
-func NewAlunoController(alunoService *services.AlunoService) *AlunoController {
-	return &AlunoController{alunoService: alunoService}
+func NewAlunoController(alunoService *services.AlunoService, transacaoService *services.TransacaoMoedaService) *AlunoController {
+	return &AlunoController{alunoService: alunoService, transacaoService: transacaoService}
 }
 
 func (h *AlunoController) GetPerfil(c *gin.Context) {
@@ -114,5 +117,14 @@ func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
          return
     }
 
+	transacao := &model.TransacaoMoeda{
+		AlunoID:   aluno.ID,
+		ProfessorID: 0, 
+		Valor:     req.Valor,
+		Motivo:   "Ajuste de saldo pelo administrador",
+		DataHora: time.Now(),
+	}
+
+	c.transacaoService.CreateTransacao(transacao)
     ctx.JSON(http.StatusOK, aluno)
 }
