@@ -19,9 +19,9 @@ type UpdateAlunoInput struct {
 }
 
 type AlunoService struct {
-	alunoRepo    *repositories.AlunoRepository
-	userRepo     *repositories.UserRepository
-	emailService *EmailService
+	alunoRepo     *repositories.AlunoRepository
+	userRepo      *repositories.UserRepository
+	emailService  *EmailService
 	transacaoRepo *repositories.TransacaoMoedaRepository
 }
 

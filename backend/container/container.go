@@ -1,7 +1,7 @@
 package container
 
 import (
-	"backend/adapters/controllers" 
+	"backend/adapters/controllers"
 	"backend/adapters/repositories"
 	"backend/application/services"
 	"backend/config"
@@ -39,28 +39,28 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 	alunoService := services.NewAlunoService(alunoRepo, userRepo, emailService, transacaoMoedaRepo)
 	userService := services.NewUserService(userRepo, cfg, db) // UserService ainda parece precisar do DB
 	empresaService := services.NewEmpresaParceiraService(empresaRepo, userRepo)
-	
+
 	professorService := services.NewProfessorService(professorRepo, alunoRepo, transacaoMoedaRepo)
-	
+
 	resgateVantagemService := services.NewResgateVantagemService(resgateVantagemRepo, alunoRepo, vantagemRepo, emailService)
 	transacaoMoedaService := services.NewTransacaoMoedaService(transacaoMoedaRepo, professorRepo, alunoRepo, emailService)
 	vantagemService := services.NewVantagemService(vantagemRepo, empresaRepo)
-	
+
 	instituicaoService := services.NewInstituicaoService(instituicaoRepo, professorRepo, userRepo, parceriaRepo)
 	parceriaService := services.NewParceriaService(parceriaRepo)
 
 	// --- Controllers ---
 	userController := controllers.NewUserController(userService, alunoService, empresaService)
 	alunoController := controllers.NewAlunoController(alunoService, transacaoMoedaService)
-	
+
 	professorController := controllers.NewProfessorController(professorService)
-	
+
 	empresaController := controllers.NewEmpresaParceiraController(empresaService, vantagemService)
-	
+
 	instituicaoController := controllers.NewInstituicaoController(instituicaoService)
-	
+
 	vantagemController := controllers.NewVantagemController(vantagemService, resgateVantagemService)
-	
+
 	parceriaController := controllers.NewParceriaController(parceriaService)
 
 	return &Container{
