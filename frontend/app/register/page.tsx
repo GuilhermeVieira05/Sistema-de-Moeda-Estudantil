@@ -1,13 +1,16 @@
-"use client"
-import { useRouter } from "next/navigation"
-import AuthLayout from "@/components/auth-layout"
-import Link from "next/link"
+"use client";
+import { useRouter } from "next/navigation";
+import AuthLayout from "@/components/auth-layout";
+import Link from "next/link";
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
-    <AuthLayout title="Criar conta" subtitle="Escolha o tipo de conta que deseja criar">
+    <AuthLayout
+      title="Criar conta"
+      subtitle="Escolha o tipo de conta que deseja criar"
+    >
       <div className="space-y-4">
         <button
           onClick={() => router.push("/register/student")}
@@ -15,7 +18,12 @@ export default function RegisterPage() {
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -61,7 +69,12 @@ export default function RegisterPage() {
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
-              <svg className="w-6 h-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-secondary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -80,12 +93,15 @@ export default function RegisterPage() {
         <div className="mt-6 text-center">
           <p className="text-base text-gray-500">
             Já tem uma conta?{" "}
-            <Link href="/login" className="text-primary font-medium hover:underline">
+            <Link
+              href="/login"
+              className="text-primary font-medium hover:underline"
+            >
               Faça login
             </Link>
           </p>
         </div>
       </div>
     </AuthLayout>
-  )
+  );
 }

@@ -87,17 +87,17 @@ func (h *AlunoController) ListAlunos(c *gin.Context) {
 }
 
 func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
-    userID := ctx.GetUint("user_id")
+    userID := ctx.GetUint("user_id") // vem do JWT
 
-    // 2. Faz o parse do body
+    // Faz o parse do body
     var req UpdateSaldoRequest
     if err := ctx.ShouldBindJSON(&req); err != nil {
         ctx.JSON(http.StatusBadRequest, gin.H{"error": "Requisição inválida: " + err.Error()})
         return
     }
 
-    // 3. Chama o Service (que você já criou)
-    err := c.alunoService.UpdateSaldo(userID, req.Valor)
+    // Atualiza o saldo do aluno pelo user_id
+    err := c.alunoService.UpdateSaldoByUserID(userID, req.Valor)
     if err != nil {
         if err.Error() == "saldo insuficiente" {
             ctx.JSON(http.StatusConflict, gin.H{"error": "Saldo insuficiente"})
@@ -107,7 +107,8 @@ func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
         return
     }
 
-    aluno, err := c.alunoService.GetAlunoByID(userID)
+    // Busca o aluno atualizado pelo user_id
+    aluno, err := c.alunoService.GetAlunoByUserID(userID)
     if err != nil {
          ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Saldo atualizado, mas falha ao buscar perfil"})
          return
