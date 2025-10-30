@@ -32,14 +32,13 @@ func (ctrl *InstituicaoController) ListInstituicoes(c *gin.Context) {
 
 // Rota: GET /api/instituicao/perfil
 func (ctrl *InstituicaoController) GetPerfil(c *gin.Context) {
-	// Padrão AlunoController: Pega ID do contexto
-	instituicaoID := c.GetUint("instituicao_id")
-	if instituicaoID == 0 {
+	userID := c.GetUint("user_id")
+	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
-	perfil, err := ctrl.service.GetInstituicaoByID(instituicaoID)
+	perfil, err := ctrl.service.GetInstituicaoByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil da instituição não encontrado"})
 		return
@@ -73,29 +72,27 @@ func (ctrl *InstituicaoController) AtualizarInstituicao(c *gin.Context) {
 
 // Rota: POST /api/instituicao/professores
 func (ctrl *InstituicaoController) RegisterProfessor(c *gin.Context) {
-	instituicaoID := c.GetUint("instituicao_id")
-	if instituicaoID == 0 {
+	userID := c.GetUint("user_id")
+	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
-	// CORRIGIDO: Usa o DTO do pacote 'services'
 	var input services.RegisterProfessorInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos: " + err.Error()})
 		return
 	}
 
-	// Agora a chamada é válida
-	professor, err := ctrl.service.RegisterProfessor(instituicaoID, &input)
+	professor, err := ctrl.service.RegisterProfessor(userID, &input)
 	if err != nil {
-		// O serviço deve tratar erros como "email/cpf já existe"
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, professor)
 }
+
 
 // Rota: GET /api/instituicao/professores
 func (ctrl *InstituicaoController) ListProfessores(c *gin.Context) {

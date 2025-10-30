@@ -72,6 +72,8 @@ func (s *InstituicaoService) UpdateInstituicao(id uint, input *model.Instituicao
 }
 
 func (s *InstituicaoService) RegisterProfessor(instID uint, input *RegisterProfessorInput) (*model.Professor, error) {
+	
+	
 	if _, err := s.userRepo.FindByEmail(input.Email); err == nil {
 		return nil, errors.New("email já está em uso")
 	}
@@ -188,4 +190,12 @@ func (s *InstituicaoService) DeleteParceria(instID, empresaID uint) error {
 	}
 
 	return s.parceriaRepo.Delete(parceria)
+}
+
+func (s *InstituicaoService) GetInstituicaoByUserID(userID uint) (*model.InstituicaoEnsino, error) {
+	instituicao, err := s.instituicaoRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, errors.New("instituição não encontrada para este usuário")
+	}
+	return instituicao, nil
 }

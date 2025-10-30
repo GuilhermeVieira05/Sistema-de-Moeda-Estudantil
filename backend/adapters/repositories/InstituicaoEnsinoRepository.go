@@ -44,3 +44,11 @@ func (r *InstituicaoEnsinoRepository) Update(instituicao *model.InstituicaoEnsin
 func (r *InstituicaoEnsinoRepository) Delete(id uint) error {
     return r.db.Delete(&model.InstituicaoEnsino{}, id).Error
 }
+
+func (r *InstituicaoEnsinoRepository) FindByUserID(userID uint) (*model.InstituicaoEnsino, error) {
+	var instituicao model.InstituicaoEnsino
+	if err := r.db.Where("user_id = ?", userID).First(&instituicao).Error; err != nil {
+		return nil, err
+	}
+	return &instituicao, nil
+}
