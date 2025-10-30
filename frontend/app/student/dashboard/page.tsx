@@ -9,12 +9,6 @@ import { getAlunoData } from "@/api/alunoApi"
 import { useEffect, useState } from "react"
 import LoadingSpinner from "@/components/loading-spinner"
 
-// Mock data
-const mockStudent = {
-  name: "João Silva",
-  balance: 850,
-}
-
 const mockRecentTransactions: Transaction[] = [
   {
     id: "1",
@@ -86,9 +80,9 @@ export default function StudentDashboard() {
       setError(null);
 
       try {
-        const alunoBuscado = await getAlunoData();
-
-        if (alunoBuscado === null) {
+        const alunoBuscado = await getAlunoData(); 
+        console.log(alunoBuscado)
+        if(alunoBuscado === null) {
           setError("Não foi possível carregar os dados do aluno.");
           setAluno(null);
         } else {
@@ -126,7 +120,7 @@ export default function StudentDashboard() {
 
   console.log("Aluno: ", aluno)
   return (
-    <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={aluno.saldo_moedas}>
+    <DashboardLayout userType="student" userName={handleName(aluno.nome)} balance={aluno.saldo_moedas ?? 0}>
       <div className="space-y-8">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
           <h1 className="text-4xl font-bold mb-3">Bem-vindo, {handleName(aluno.nome)}!</h1>
@@ -192,7 +186,7 @@ export default function StudentDashboard() {
                 key={advantage.id}
                 advantage={advantage}
                 onRedeem={handleRedeem}
-                userBalance={mockStudent.balance}
+                userBalance={aluno.saldo_moedas}
               />
             ))}
           </div>

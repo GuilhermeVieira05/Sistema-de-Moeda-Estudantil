@@ -38,7 +38,7 @@ export interface Professor extends User {
   cpf: string
   department: string
   institution: string
-  balance: number
+  saldo_moedas: number
 }
 
 export interface Company extends User {

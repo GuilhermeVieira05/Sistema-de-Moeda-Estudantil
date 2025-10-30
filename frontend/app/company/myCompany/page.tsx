@@ -73,9 +73,10 @@ export default function CompanyProfilePage() {
           endereco: formData.endereco,
           email: formData.email,
           cnpj: formData.cnpj,
+          descricao: formData.descricao,
         }),
       })
-
+      console.log("Response do salvar:", response)
       if (!response.ok) {
         const err = await response.json()
         throw new Error(err.error || "Erro ao salvar alterações.")

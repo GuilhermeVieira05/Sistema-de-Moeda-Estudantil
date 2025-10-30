@@ -1,13 +1,16 @@
-"use client"
-import { useRouter } from "next/navigation"
-import AuthLayout from "@/components/auth-layout"
-import Link from "next/link"
+"use client";
+import { useRouter } from "next/navigation";
+import AuthLayout from "@/components/auth-layout";
+import Link from "next/link";
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
-    <AuthLayout title="Criar conta" subtitle="Escolha o tipo de conta que deseja criar">
+    <AuthLayout
+      title="Criar conta"
+      subtitle="Escolha o tipo de conta que deseja criar"
+    >
       <div className="space-y-4">
         <button
           onClick={() => router.push("/register/student")}
@@ -15,7 +18,12 @@ export default function RegisterPage() {
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -32,12 +40,39 @@ export default function RegisterPage() {
         </button>
 
         <button
+          onClick={() => router.push("/register/professor")}
+          className="w-full p-6 border-2 border-border rounded-xl hover:border-orange-500 hover:bg-surface transition-all text-left group"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+              <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 cursor-pointer">
+              <h3 className="font-semibold text-lg text-foreground mb-1">Sou Professor</h3>
+              <p className="text-sm text-gray-500">Compartilhe conhecimento e inspire alunos</p>
+            </div>
+          </div>
+        </button>
+
+        <button
           onClick={() => router.push("/register/company")}
           className="w-full p-6 border-2 border-border rounded-xl hover:border-secondary hover:bg-surface transition-all text-left group"
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
-              <svg className="w-6 h-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-secondary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -56,12 +91,15 @@ export default function RegisterPage() {
         <div className="mt-6 text-center">
           <p className="text-base text-gray-500">
             Já tem uma conta?{" "}
-            <Link href="/login" className="text-primary font-medium hover:underline">
+            <Link
+              href="/login"
+              className="text-primary font-medium hover:underline"
+            >
               Faça login
             </Link>
           </p>
         </div>
       </div>
     </AuthLayout>
-  )
+  );
 }

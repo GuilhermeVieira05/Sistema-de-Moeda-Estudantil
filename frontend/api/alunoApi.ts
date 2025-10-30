@@ -24,47 +24,82 @@ export async function getAlunoData(): Promise<Student> {
   return alunoData;
 }
 
-export async function updateAlunoData(formData: Partial<Student>): Promise<boolean> {
-  const url = `${apiUrl}/aluno`
-  const token = localStorage.getItem("token")
+export async function updateAluno(updatedAluno: Student): Promise<Student> {
+  const url = `${apiUrl}/aluno`;
+
+  const token = localStorage.getItem('token');
 
   const response = await fetch(url, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify(formData),
-  })
+    body: JSON.stringify(updatedAluno),
+  });
 
   if (!response.ok) {
-    const errorData: { error?: string } = await response.json().catch(() => ({}))
-    console.error(`Erro ${response.status}: ${errorData.error || "Falha ao atualizar dados do aluno"}`)
-    return false
+    const errorData: { error: string } = await response.json();
+    throw new Error(`Erro ${response.status}: ${errorData.error || 'Falha ao buscar dados do aluno'}`);
   }
 
-  console.log("Aluno atualizado com sucesso.")
-  return true
+  const alunoData: Student = await response.json();
+  return alunoData;
 }
 
-export async function deleteAluno(): Promise<boolean> {
-  const url = `${apiUrl}/aluno`
-  const token = localStorage.getItem("token")
+export async function resgatarVantagem(advantageId: string): Promise<Student> {
+  const url = `${apiUrl}/aluno/resgatar-vantagem`;
+  const token = localStorage.getItem('token');
 
   const response = await fetch(url, {
-    method: "DELETE",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
-  })
+    body: JSON.stringify({ vantagem_id: advantageId }), 
+  });
 
   if (!response.ok) {
-    const errorData: { error?: string } = await response.json().catch(() => ({}))
-    console.error(`Erro ${response.status}: ${errorData.error || "Falha ao excluir conta do aluno"}`)
-    return false
+    const errorData: { error: string } = await response.json();
+    
+    // O backend provavelmente retornará 409 (Conflict) ou 400 se o saldo for insuficiente
+    // Estamos tratando "saldo insuficiente" vindo do backend
+    if (response.status === 409 || response.status === 400) {
+       throw new Error(errorData.error || 'Saldo insuficiente');
+    }
+
+    throw new Error(`Erro ${response.status}: ${errorData.error || 'Falha ao resgatar vantagem'}`);
   }
 
-  console.log("Conta de aluno excluída com sucesso.")
-  return true
+  // O backend deve retornar o objeto Aluno atualizado com o novo saldo
+  const alunoData: Student = await response.json();
+  return alunoData;
+}
+
+export async function updateAlunoSaldo(valor: number): Promise<Student> {
+  const url = `${apiUrl}/aluno/saldo`; // Endpoint PATCH
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ valor: valor }), 
+  });
+
+  if (!response.ok) {
+    const errorData: { error: string } = await response.json();
+    
+    if (response.status === 409) { 
+       throw new Error(errorData.error || 'Saldo insuficiente');
+    }
+
+    throw new Error(`Erro ${response.status}: ${errorData.error || 'Falha ao atualizar saldo'}`);
+  }
+
+  const alunoData: Student = await response.json();
+  return alunoData;
 }

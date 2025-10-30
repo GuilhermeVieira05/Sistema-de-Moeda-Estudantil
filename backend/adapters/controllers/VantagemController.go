@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"backend/application/services"
+	"fmt"
 	"net/http"
+
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,15 +38,13 @@ type ResgatarVantagemRequest struct {
 func (h *VantagemController) ResgatarVantagem(c *gin.Context) {
 	userID := c.GetUint("user_id")
 
+	fmt.Println("UserID do Aluno:", userID)
+
 	var req ResgatarVantagemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	// Buscar aluno pelo userID (será implementado no service)
-	// Por enquanto, vamos assumir que temos o alunoID
-	// Em produção, você precisaria buscar o aluno pelo userID primeiro
 
 	resgate, err := h.resgateService.ResgatarVantagem(userID, req.VantagemID)
 	if err != nil {
