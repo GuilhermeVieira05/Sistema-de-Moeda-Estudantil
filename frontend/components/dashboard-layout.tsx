@@ -52,6 +52,7 @@ export function DashboardLayout({ children, userType, userName, balance, menuIte
           { label: "Vantagens", href: "/company/advantages", icon: "gift" },
           { label: "Resgates", href: "/company/redemptions", icon: "check" },
           { label: "Minha Empresa", href: "/company/myCompany", icon: "check" },
+          { label: "Cadastro de Professor", href: "/company/registerProfessor", icon: "check" },
         ]
       case "admin":
         return [
