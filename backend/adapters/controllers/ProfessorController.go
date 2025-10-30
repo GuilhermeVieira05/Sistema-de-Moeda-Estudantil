@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"backend/application/model"
 	"backend/application/services"
-	"backend/application/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,16 +19,12 @@ func NewProfessorController(s *services.ProfessorService) *ProfessorController {
 
 // Rota: GET /api/professor/perfil
 func (ctrl *ProfessorController) GetPerfil(c *gin.Context) {
-	// Assumindo que o AuthMiddleware coloca "userID" no contexto
-	userID, err := utils.GetUserIDFromContext(c) // Você precisará de um GetUserIDFromContext
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
-		return
-	}
+	// Pega o userID do professor logado (definido pelo middleware de auth)
+	userID := c.GetUint("user_id")
 
 	perfil, err := ctrl.service.GetPerfil(userID)
 	if err != nil {
-		utils.SendError(c, http.StatusNotFound, "Perfil do professor não encontrado")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil do professor não encontrado"})
 		return
 	}
 	c.JSON(http.StatusOK, perfil)
@@ -38,16 +32,13 @@ func (ctrl *ProfessorController) GetPerfil(c *gin.Context) {
 
 // Rota: GET /api/professor/extrato
 func (ctrl *ProfessorController) GetExtrato(c *gin.Context) {
-	// Precisamos do ID do *Professor*, não do User
-	professorID, err := utils.GetProfessorIDFromContext(c) // Função nova no utils
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário (Professor) não autorizado")
-		return
-	}
+	// Pega o userID do professor logado
+	userID := c.GetUint("user_id")
 
-	extrato, err := ctrl.service.GetExtrato(professorID)
+	// O service deve ser capaz de buscar o extrato a partir do userID
+	extrato, err := ctrl.service.GetExtrato(userID)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao buscar extrato")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar extrato: " + err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, extrato)
@@ -55,28 +46,30 @@ func (ctrl *ProfessorController) GetExtrato(c *gin.Context) {
 
 // Rota: POST /api/professor/enviar-moedas
 func (ctrl *ProfessorController) EnviarMoedas(c *gin.Context) {
-	professorID, err := utils.GetProfessorIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário (Professor) não autorizado")
-		return
-	}
+	// Pega o userID do professor logado (quem está enviando)
+	userID := c.GetUint("user_id")
 
-	var input model.EnviarMoedasInput // Você precisa criar este DTO
+	// CORRIGIDO: Usa o DTO 'EnviarMoedasInput' definido no package 'services'.
+	// Esse DTO agora inclui 'Motivo'.
+	var input services.EnviarMoedasInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.SendError(c, http.StatusBadRequest, "Dados de entrada inválidos")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos: " + err.Error()})
 		return
 	}
 
-	transacao, err := ctrl.service.EnviarMoedas(professorID, &input)
+	// O service aceitará o input (com AlunoID, Valor e Motivo)
+	transacao, err := ctrl.service.EnviarMoedas(userID, &input)
 	if err != nil {
-		// O service retorna erros específicos (ex: "Saldo insuficiente")
-		utils.SendError(c, http.StatusConflict, err.Error())
+		// Segue o padrão do AlunoController.UpdateSaldo para erros específicos
+		if err.Error() == "saldo insuficiente" {
+			c.JSON(http.StatusConflict, gin.H{"error": "Saldo insuficiente"})
+			return
+		}
+
+		// Erro genérico do serviço
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar moedas: " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, transacao)
 }
-
-// NOTA: A rota /api/professor/alunos chama o c.AlunoController.ListAlunos
-// Você precisará garantir que o AlunoController.ListAlunos
-// filtre os alunos pela instituição do professor logado.

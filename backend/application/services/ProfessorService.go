@@ -1,26 +1,32 @@
 package services
 
 import (
+	"backend/adapters/repositories"
 	"backend/application/model"
-	"backend/adapters/repositories" 
 	"errors"
+	// "time" // Removido, pois o DB define o DataHora via default
 )
 
+// EnviarMoedasInput é o DTO (Data Transfer Object) para o envio de moedas.
+// Esta é a versão CORRETA, usando Motivo.
+type EnviarMoedasInput struct {
+	AlunoID uint   `json:"aluno_id" binding:"required"`
+	Valor   int    `json:"valor" binding:"required"`
+	Motivo  string `json:"motivo" binding:"required"` // Corresponde ao model.TransacaoMoeda
+}
+
 type ProfessorService struct {
-	// db *gorm.DB // Para transações
 	professorRepo *repositories.ProfessorRepository
-	alunoRepo     *repositories.AlunoRepository         // Para enviar moedas
-	transacaoRepo *repositories.TransacaoMoedaRepository // Para enviar moedas e extrato
+	alunoRepo     *repositories.AlunoRepository
+	transacaoRepo *repositories.TransacaoMoedaRepository
 }
 
 func NewProfessorService(
-	// db *gorm.DB,
 	pRepo *repositories.ProfessorRepository,
 	aRepo *repositories.AlunoRepository,
 	tRepo *repositories.TransacaoMoedaRepository,
 ) *ProfessorService {
 	return &ProfessorService{
-		// db: db,
 		professorRepo: pRepo,
 		alunoRepo:     aRepo,
 		transacaoRepo: tRepo,
@@ -36,18 +42,21 @@ func (s *ProfessorService) GetPerfil(userID uint) (*model.Professor, error) {
 	return professor, nil
 }
 
-// GetExtrato busca o extrato de transações do professor logado
-func (s *ProfessorService) GetExtrato(professorID uint) ([]model.TransacaoMoeda, error) {
-	// Busca transações onde o professor é o remetente (enviou)
-	return s.transacaoRepo.FindByProfessorID(professorID)
+// GetExtrato busca o extrato de transações do professor logado (pelo UserID)
+func (s *ProfessorService) GetExtrato(userID uint) ([]model.TransacaoMoeda, error) {
+	professor, err := s.professorRepo.FindByUserID(userID)
+	if err != nil {
+		return nil, errors.New("perfil de professor não encontrado")
+	}
+
+	return s.transacaoRepo.FindByProfessorID(professor.ID)
 }
 
-// EnviarMoedas (DTO de Input é necessário)
-// Esta é uma lógica de exemplo, você precisará dos repositórios
-func (s *ProfessorService) EnviarMoedas(professorID uint, input *model.EnviarMoedasInput) (*model.TransacaoMoeda, error) {
+// EnviarMoedas (Assinatura corrigida para receber userID e o DTO local)
+func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (*model.TransacaoMoeda, error) {
 
-	// 1. Busca o professor (remetente)
-	professor, err := s.professorRepo.FindByID(professorID)
+	// 1. Busca o professor (remetente) pelo UserID
+	professor, err := s.professorRepo.FindByUserID(userID)
 	if err != nil {
 		return nil, errors.New("professor não encontrado")
 	}
@@ -56,6 +65,9 @@ func (s *ProfessorService) EnviarMoedas(professorID uint, input *model.EnviarMoe
 	if professor.SaldoMoedas < input.Valor {
 		return nil, errors.New("saldo insuficiente")
 	}
+	if input.Valor <= 0 {
+		return nil, errors.New("o valor deve ser positivo")
+	}
 
 	// 3. Busca o aluno (destinatário)
 	aluno, err := s.alunoRepo.FindByID(input.AlunoID)
@@ -63,40 +75,36 @@ func (s *ProfessorService) EnviarMoedas(professorID uint, input *model.EnviarMoe
 		return nil, errors.New("aluno não encontrado")
 	}
 
-	// --- Início da Transação (Idealmente) ---
-	// tx := s.db.Begin()
-	// ... (Toda a lógica abaixo deveria usar 'tx')
+	// --- Transação Removida (Seguindo padrão AlunoService) ---
 
 	// 4. Debita do professor
 	professor.SaldoMoedas -= input.Valor
 	if err := s.professorRepo.Update(professor); err != nil {
-		// tx.Rollback()
 		return nil, errors.New("erro ao debitar do professor")
 	}
 
 	// 5. Credita ao aluno
 	aluno.SaldoMoedas += input.Valor
 	if err := s.alunoRepo.Update(aluno); err != nil {
-		// tx.Rollback()
+		// NOTA: Inconsistência. O professor foi debitado, mas o aluno não foi creditado.
 		return nil, errors.New("erro ao creditar ao aluno")
 	}
 
 	// 6. Cria o registro da transação
 	transacao := &model.TransacaoMoeda{
-		ProfessorID: &professor.ID,
-		AlunoID:     &aluno.ID,
+		ProfessorID: professor.ID,
+		AlunoID:     aluno.ID,
 		Valor:       input.Valor,
-		Tipo:        "transferencia", // ou "merito"
-		Descricao:   input.Descricao,
+		Motivo:      input.Motivo,
 	}
 
 	if err := s.transacaoRepo.Create(transacao); err != nil {
-		// tx.Rollback()
+		// NOTA: A transferência ocorreu, mas não foi registrada.
 		return nil, errors.New("erro ao registrar transação")
 	}
 
-	// tx.Commit()
-	// --- Fim da Transação ---
+	transacao.Professor = *professor
+	transacao.Aluno = *aluno
 
 	return transacao, nil
 }

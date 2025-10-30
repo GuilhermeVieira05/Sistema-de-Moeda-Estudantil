@@ -1,15 +1,14 @@
 package controllers
 
 import (
-	"backend/application/model"   
-	"backend/application/services" 
-	"backend/application/utils"
-	"backend/application/dto"   
+	"backend/application/model"
+	"backend/application/services" // DTOs virão daqui
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+// Pacotes 'utils' e 'dto' foram removidos
 
 type InstituicaoController struct {
 	service *services.InstituicaoService
@@ -25,7 +24,7 @@ func NewInstituicaoController(s *services.InstituicaoService) *InstituicaoContro
 func (ctrl *InstituicaoController) ListInstituicoes(c *gin.Context) {
 	instituicoes, err := ctrl.service.ListInstituicoes()
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao listar instituições")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao listar instituições"})
 		return
 	}
 	c.JSON(http.StatusOK, instituicoes)
@@ -33,15 +32,16 @@ func (ctrl *InstituicaoController) ListInstituicoes(c *gin.Context) {
 
 // Rota: GET /api/instituicao/perfil
 func (ctrl *InstituicaoController) GetPerfil(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	// Padrão AlunoController: Pega ID do contexto
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	perfil, err := ctrl.service.GetInstituicaoByID(instituicaoID)
 	if err != nil {
-		utils.SendError(c, http.StatusNotFound, "Perfil da instituição não encontrado")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Perfil da instituição não encontrado"})
 		return
 	}
 
@@ -50,21 +50,21 @@ func (ctrl *InstituicaoController) GetPerfil(c *gin.Context) {
 
 // Rota: PUT /api/instituicao
 func (ctrl *InstituicaoController) AtualizarInstituicao(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	var input model.InstituicaoEnsino // Ou um DTO de atualização
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.SendError(c, http.StatusBadRequest, "Dados de entrada inválidos")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos"})
 		return
 	}
 
 	updatedPerfil, err := ctrl.service.UpdateInstituicao(instituicaoID, &input)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao atualizar perfil")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar perfil"})
 		return
 	}
 
@@ -73,22 +73,24 @@ func (ctrl *InstituicaoController) AtualizarInstituicao(c *gin.Context) {
 
 // Rota: POST /api/instituicao/professores
 func (ctrl *InstituicaoController) RegisterProfessor(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
-	var input dto.RegisterProfessorInput
+	// CORRIGIDO: Usa o DTO do pacote 'services'
+	var input services.RegisterProfessorInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.SendError(c, http.StatusBadRequest, "Dados de entrada inválidos")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos: " + err.Error()})
 		return
 	}
 
+	// Agora a chamada é válida
 	professor, err := ctrl.service.RegisterProfessor(instituicaoID, &input)
 	if err != nil {
 		// O serviço deve tratar erros como "email/cpf já existe"
-		utils.SendError(c, http.StatusConflict, err.Error())
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -97,15 +99,15 @@ func (ctrl *InstituicaoController) RegisterProfessor(c *gin.Context) {
 
 // Rota: GET /api/instituicao/professores
 func (ctrl *InstituicaoController) ListProfessores(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	professores, err := ctrl.service.ListProfessoresByInstituicao(instituicaoID)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao listar professores")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao listar professores"})
 		return
 	}
 
@@ -114,21 +116,21 @@ func (ctrl *InstituicaoController) ListProfessores(c *gin.Context) {
 
 // Rota: GET /api/instituicao/professores/:id
 func (ctrl *InstituicaoController) GetProfessor(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	professorID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "ID do professor inválido")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do professor inválido"})
 		return
 	}
 
 	professor, err := ctrl.service.GetProfessorByID(instituicaoID, uint(professorID))
 	if err != nil {
-		utils.SendError(c, http.StatusNotFound, "Professor não encontrado")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Professor não encontrado"})
 		return
 	}
 
@@ -137,28 +139,29 @@ func (ctrl *InstituicaoController) GetProfessor(c *gin.Context) {
 
 // Rota: PUT /api/instituicao/professores/:id
 func (ctrl *InstituicaoController) UpdateProfessor(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	professorID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "ID do professor inválido")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do professor inválido"})
 		return
 	}
 
-	var input dto.UpdateProfessorInput // DTO de atualização
+	// CORRIGIDO: Usa o DTO do pacote 'services'
+	var input services.UpdateProfessorInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.SendError(c, http.StatusBadRequest, "Dados de entrada inválidos")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos: " + err.Error()})
 		return
 	}
 
-	// O serviço deve verificar a permissão e atualizar o professor
+	// Agora a chamada é válida
 	professor, err := ctrl.service.UpdateProfessor(instituicaoID, uint(professorID), &input)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao atualizar professor")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar professor"})
 		return
 	}
 
@@ -167,88 +170,86 @@ func (ctrl *InstituicaoController) UpdateProfessor(c *gin.Context) {
 
 // Rota: DELETE /api/instituicao/professores/:id
 func (ctrl *InstituicaoController) DeleteProfessor(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	professorID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "ID do professor inválido")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do professor inválido"})
 		return
 	}
 
-	// O serviço deve verificar a permissão e deletar o professor
 	if err := ctrl.service.DeleteProfessor(instituicaoID, uint(professorID)); err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao deletar professor")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar professor"})
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	// Resposta padronizada (como em AlunoController)
+	c.JSON(http.StatusOK, gin.H{"message": "Professor deletado com sucesso"})
 }
 
-// ListParcerias lista todas as parcerias da instituição.
 // Rota: GET /api/instituicao/parcerias
 func (ctrl *InstituicaoController) ListParcerias(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	parcerias, err := ctrl.service.ListParcerias(instituicaoID)
 	if err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao listar parcerias")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao listar parcerias"})
 		return
 	}
 
 	c.JSON(http.StatusOK, parcerias)
 }
 
-// SolicitarParceria cria uma nova solicitação de parceria.
 // Rota: POST /api/instituicao/parcerias/solicitar/:empresa_id
 func (ctrl *InstituicaoController) SolicitarParceria(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	empresaID, err := strconv.ParseUint(c.Param("empresa_id"), 10, 32)
 	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "ID da empresa inválido")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID da empresa inválido"})
 		return
 	}
 
 	parceria, err := ctrl.service.CreateParceria(instituicaoID, uint(empresaID))
 	if err != nil {
-		utils.SendError(c, http.StatusConflict, err.Error()) // Ex: "Parceria já existe"
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()}) // Ex: "Parceria já existe"
 		return
 	}
 
 	c.JSON(http.StatusCreated, parceria)
 }
 
-// RemoverParceria deleta uma parceria existente.
 // Rota: DELETE /api/instituicao/parcerias/:empresa_id
 func (ctrl *InstituicaoController) RemoverParceria(c *gin.Context) {
-	instituicaoID, err := utils.GetInstituicaoIDFromContext(c)
-	if err != nil {
-		utils.SendError(c, http.StatusUnauthorized, "Usuário não autorizado")
+	instituicaoID := c.GetUint("instituicao_id")
+	if instituicaoID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário (Instituição) não autorizado"})
 		return
 	}
 
 	empresaID, err := strconv.ParseUint(c.Param("empresa_id"), 10, 32)
 	if err != nil {
-		utils.SendError(c, http.StatusBadRequest, "ID da empresa inválido")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID da empresa inválido"})
 		return
 	}
 
 	if err := ctrl.service.DeleteParceria(instituicaoID, uint(empresaID)); err != nil {
-		utils.SendError(c, http.StatusInternalServerError, "Erro ao remover parceria")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao remover parceria"})
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	// Resposta padronizada
+	c.JSON(http.StatusOK, gin.H{"message": "Parceria removida com sucesso"})
 }

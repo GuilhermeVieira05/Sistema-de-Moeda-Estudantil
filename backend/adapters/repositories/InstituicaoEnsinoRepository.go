@@ -28,14 +28,19 @@ func (r *InstituicaoEnsinoRepository) FindByID(id uint) (*model.InstituicaoEnsin
 	return &instituicao, nil
 }
 
-// FindAll (Renomeado de List para bater com o InstituicaoService)
+// FindAll (Usado pelo InstituicaoService.ListInstituicoes)
 func (r *InstituicaoEnsinoRepository) FindAll() ([]model.InstituicaoEnsino, error) {
 	var instituicoes []model.InstituicaoEnsino
 	err := r.db.Find(&instituicoes).Error
 	return instituicoes, err
 }
 
-// Update (Método adicionado que estava faltando para o Service)
+// Update (Usado pelo InstituicaoService.UpdateInstituicao)
 func (r *InstituicaoEnsinoRepository) Update(instituicao *model.InstituicaoEnsino) error {
 	return r.db.Save(instituicao).Error
+}
+
+// Delete (Método de exclusão padrão, se necessário)
+func (r *InstituicaoEnsinoRepository) Delete(id uint) error {
+    return r.db.Delete(&model.InstituicaoEnsino{}, id).Error
 }
