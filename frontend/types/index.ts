@@ -34,12 +34,13 @@ export interface Company extends User {
 
 export interface Transaction {
   id: string
-  type: "send" | "receive" | "redeem"
-  amount: number
-  date: string
-  description: string
-  from?: string
-  to?: string
+  alunoId?: string
+  professorId?: string
+  aluno?: Student
+  professor?: Professor
+  valor?: number
+  motivo?: string
+  data: string
 }
 
 export interface Advantage {

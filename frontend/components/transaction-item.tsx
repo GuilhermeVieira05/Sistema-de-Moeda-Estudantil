@@ -5,8 +5,8 @@ interface TransactionItemProps {
 }
 
 export default function TransactionItem({ transaction }: TransactionItemProps) {
-  const isPositive = transaction.type === "receive"
-  const isNegative = transaction.type === "redeem"
+  const isPositive = transaction.valor ? "receive" : "redeem"
+  const isNegative = transaction.motivo != "redeem"
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-surface rounded-lg transition-colors">
@@ -37,16 +37,16 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
         </div>
 
         <div>
-          <p className="font-medium text-foreground">{transaction.description}</p>
-          <p className="text-sm text-gray-500">{transaction.date}</p>
-          {transaction.from && <p className="text-xs text-blue-600">De: {transaction.from}</p>}
-          {transaction.to && <p className="text-xs text-blue-600">Para: {transaction.to}</p>}
+          <p className="font-medium text-foreground">{transaction.motivo}</p>
+          <p className="text-sm text-gray-500">{transaction.data}</p>
+          {transaction.professor?.nome && <p className="text-xs text-blue-600">De: {transaction.professor?.nome}</p>}
+          {transaction.aluno?.nome && <p className="text-xs text-blue-600">Para: {transaction.aluno?.nome}</p>}
         </div>
       </div>
 
       <div className={`font-bold ${isPositive ? "text-success" : isNegative ? "text-error" : "text-foreground"}`}>
         {isPositive ? "+" : isNegative ? "-" : ""}
-        {transaction.amount}
+        {transaction.valor}
       </div>
     </div>
   )

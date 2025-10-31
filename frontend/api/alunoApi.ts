@@ -23,6 +23,28 @@ export async function getAlunoData(): Promise<Student> {
   return alunoData;
 }
 
+export async function getExtrato() {
+  const url = `${apiUrl}/aluno/extrato`;
+
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData: { error: string } = await response.json();
+    throw new Error(`Erro ${response.status}: ${errorData.error || 'Falha ao buscar extrato do aluno'}`);
+  }
+
+  const extratoData = await response.json();
+  return extratoData;
+}
+
 export async function updateAluno(updatedAluno: Student): Promise<Student> {
   const url = `${apiUrl}/aluno`;
 

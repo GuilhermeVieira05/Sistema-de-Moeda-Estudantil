@@ -4,6 +4,7 @@ import (
 	"backend/adapters/repositories"
 	"backend/application/model"
 	"errors"
+	"fmt"
 	// "time" // Removido, pois o DB define o DataHora via default
 )
 
@@ -57,6 +58,7 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 
 	// 1. Busca o professor (remetente) pelo UserID
 	professor, err := s.professorRepo.FindByUserID(userID)
+	fmt.Print(professor, err, userID)
 	if err != nil {
 		return nil, errors.New("professor não encontrado")
 	}

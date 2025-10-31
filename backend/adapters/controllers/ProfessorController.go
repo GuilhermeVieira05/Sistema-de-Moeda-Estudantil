@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"backend/application/services"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -48,6 +49,11 @@ func (ctrl *ProfessorController) GetExtrato(c *gin.Context) {
 func (ctrl *ProfessorController) EnviarMoedas(c *gin.Context) {
 	// Pega o userID do professor logado (quem está enviando)
 	userID := c.GetUint("user_id")
+	userID = 22
+
+	fmt.Print("UserID do professor logado:", userID)
+	// var idOriginal int = 22
+	// idUint := uint(idOriginal) 
 
 	// CORRIGIDO: Usa o DTO 'EnviarMoedasInput' definido no package 'services'.
 	// Esse DTO agora inclui 'Motivo'.

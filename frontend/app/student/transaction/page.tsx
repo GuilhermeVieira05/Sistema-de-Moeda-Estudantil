@@ -1,80 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { SetStateAction, useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import TransactionItem from "@/components/transaction-item"
 import type { Student, Transaction } from "@/types"
-import { getAlunoData } from "@/api/alunoApi"
+import { getAlunoData, getExtrato } from "@/api/alunoApi"
 
-const mockStudent = {
-  name: "João Silva",
-  balance: 850,
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: "1",
-    type: "receive",
-    amount: 100,
-    date: "05/01/2025",
-    description: "Participação ativa em aula",
-    from: "Prof. Maria Santos",
-  },
-  {
-    id: "2",
-    type: "receive",
-    amount: 50,
-    date: "03/01/2025",
-    description: "Trabalho excelente",
-    from: "Prof. Carlos Lima",
-  },
-  {
-    id: "3",
-    type: "redeem",
-    amount: 200,
-    date: "02/01/2025",
-    description: "Desconto Restaurante Universitário",
-    to: "RU Central",
-  },
-  {
-    id: "4",
-    type: "receive",
-    amount: 75,
-    date: "28/12/2024",
-    description: "Apresentação de seminário",
-    from: "Prof. Ana Paula",
-  },
-  {
-    id: "5",
-    type: "receive",
-    amount: 100,
-    date: "20/12/2024",
-    description: "Projeto final nota máxima",
-    from: "Prof. Roberto Silva",
-  },
-  {
-    id: "6",
-    type: "redeem",
-    amount: 150,
-    date: "15/12/2024",
-    description: "Café grátis por uma semana",
-    to: "Café Central",
-  },
-  {
-    id: "7",
-    type: "receive",
-    amount: 50,
-    date: "10/12/2024",
-    description: "Ajuda aos colegas",
-    from: "Prof. Maria Santos",
-  },
-]
+// removed local mocks; using real API data
 
 export default function StudentTransactionsPage() {
   const [filter, setFilter] = useState<"all" | "receive" | "redeem">("all")
-const [aluno, setAluno] = useState<Student|null>(null)
+  const [aluno, setAluno] = useState<Student|null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   
      useEffect(() => {
       const fetchAluno = async () => {
@@ -100,41 +39,53 @@ const [aluno, setAluno] = useState<Student|null>(null)
         }
       }
       const fetchTransactions = async () => {
-        // Aqui você pode implementar a lógica para buscar as transações reais do backend
-        // Por enquanto, estamos usando as mockTransactions
+        setIsLoading(true);
+        setError(null);
+        try {
+          const transactionsData = await getExtrato();
+          console.log("Transações buscadas:", transactionsData); 
+          setTransactions(transactionsData.transacoes);
+        } catch (err: any) {
+          console.error("Erro ao buscar transações:", err);
+          setError(err.message || "Ocorreu um erro desconhecido ao carregar as transações.");
       }
+    }
       fetchTransactions();
       fetchAluno()
     }, []) 
 
-  const filteredTransactions = mockTransactions.filter((t) => filter === "all" || t.type === filter)
+  const filteredTransactions = transactions
 
-  const totalReceived = mockTransactions.filter((t) => t.type === "receive").reduce((sum, t) => sum + t.amount, 0)
+  // const totalReceived = transactions.filter((t) => t.type === "receive").reduce((sum, t) => sum + t.amount, 0)
 
-  const totalRedeemed = mockTransactions.filter((t) => t.type === "redeem").reduce((sum, t) => sum + t.amount, 0)
+  // const totalRedeemed = transactions.filter((t) => t.type === "redeem").reduce((sum, t) => sum + t.amount, 0)
+
+  const totalReceived = transactions.filter((t) => t.valor && t.valor > 0).reduce((sum, t) => sum + (t.valor || 0), 0)
+
+  const totalRedeemed = transactions.filter((t) => t.valor && t.valor < 0).reduce((sum, t) => sum + (t.valor || 0), 0) * -1
 
   return (
-    <DashboardLayout userType="student" userName={mockStudent.name} balance={mockStudent.balance}>
+  <DashboardLayout userType="student" userName={aluno?.nome ?? 'Aluno'} balance={aluno?.saldo_moedas ?? 0}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Extrato de Transações</h1>
-          <p className="text-muted">Acompanhe todas as suas movimentações</p>
+          <p className="text-gray-500">Acompanhe todas as suas movimentações</p>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Saldo Atual</p>
-            <p className="text-3xl font-bold text-primary">{mockStudent.balance}</p>
+            <p className="text-sm text-gray-500 mb-1">Saldo Atual</p>
+            <p className="text-3xl font-bold text-primary">{aluno?.saldo_moedas ?? 0}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Total Recebido</p>
+            <p className="text-sm text-gray-500 mb-1">Total Recebido</p>
             <p className="text-3xl font-bold text-success">+{totalReceived}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-border">
-            <p className="text-sm text-muted mb-1">Total Resgatado</p>
+            <p className="text-sm text-gray-500 mb-1">Total Resgatado</p>
             <p className="text-3xl font-bold text-error">-{totalRedeemed}</p>
           </div>
         </div>
@@ -145,7 +96,7 @@ const [aluno, setAluno] = useState<Student|null>(null)
             <button
               onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "all" ? "bg-primary text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "all" ? "bg-primary text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Todas
@@ -153,7 +104,7 @@ const [aluno, setAluno] = useState<Student|null>(null)
             <button
               onClick={() => setFilter("receive")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "receive" ? "bg-success text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "receive" ? "bg-success text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Recebidas
@@ -161,7 +112,7 @@ const [aluno, setAluno] = useState<Student|null>(null)
             <button
               onClick={() => setFilter("redeem")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === "redeem" ? "bg-error text-white" : "bg-surface text-muted hover:bg-border"
+                filter === "redeem" ? "bg-error text-white" : "bg-surface text-gray-500 hover:bg-border"
               }`}
             >
               Resgatadas
@@ -178,7 +129,7 @@ const [aluno, setAluno] = useState<Student|null>(null)
 
         {filteredTransactions.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted">Nenhuma transação encontrada</p>
+            <p className="text-gray-500">Nenhuma transação encontrada</p>
           </div>
         )}
       </div>
