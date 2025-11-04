@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface Student {
   id: string
-  name: string
+  nome: string
   email: string
   course: string
 }
@@ -14,69 +14,110 @@ interface StudentSearchProps {
   selectedStudent?: Student
 }
 
-const mockStudents: Student[] = [
-  { id: "1", name: "João Silva", email: "joao@email.com", course: "Engenharia de Software" },
-  { id: "2", name: "Maria Santos", email: "maria@email.com", course: "Ciência da Computação" },
-  { id: "3", name: "Pedro Oliveira", email: "pedro@email.com", course: "Sistemas de Informação" },
-  { id: "4", name: "Ana Costa", email: "ana@email.com", course: "Engenharia de Software" },
-  { id: "5", name: "Carlos Lima", email: "carlos@email.com", course: "Administração" },
-]
-
 export default function StudentSearch({ onSelect, selectedStudent }: StudentSearchProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showResults, setShowResults] = useState(false)
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState<Student[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [showDropdown, setShowDropdown] = useState(false)
 
-  const filteredStudents = mockStudents.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  // Buscar alunos conforme o prefixo digitado
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([])
+      return
+    }
+
+    const fetchStudents = async () => {
+      try {
+        setLoading(true)
+        setError("")
+
+        const token = localStorage.getItem("token")
+        console.log("Token:", token)
+        if (!token) throw new Error("Token não encontrado")
+
+        const res = await fetch(`http://localhost:8080/api/professor/prefix?prefix=${query}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || "Erro ao buscar alunos")
+        }
+
+        const data = await res.json()
+        setResults(data)
+        setShowDropdown(true)
+      } catch (err: any) {
+        setError(err.message || "Erro ao buscar alunos")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    const delayDebounce = setTimeout(fetchStudents, 400) // espera 400ms antes de buscar
+    return () => clearTimeout(delayDebounce)
+  }, [query])
 
   const handleSelect = (student: Student) => {
     onSelect(student)
-    setSearchTerm(student.name)
-    setShowResults(false)
+    setQuery(student.nome)
+    setShowDropdown(false)
+  }
+
+  const handleClear = () => {
+    setQuery("")
+    onSelect(undefined as any)
+    setResults([])
   }
 
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-foreground mb-2">
-        Aluno <span className="text-error">*</span>
-      </label>
-
+      <label className="text-sm font-medium leading-none mb-1 block">Buscar aluno</label>
       <input
         type="text"
-        value={searchTerm}
+        value={query}
         onChange={(e) => {
-          setSearchTerm(e.target.value)
-          setShowResults(true)
+          setQuery(e.target.value)
+          setShowDropdown(true)
         }}
-        onFocus={() => setShowResults(true)}
-        placeholder="Buscar aluno por nome ou email..."
-        className="w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        placeholder="Digite o nome do aluno..."
+        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-primary outline-none"
       />
 
-      {showResults && searchTerm && filteredStudents.length > 0 && (
-        <div className="absolute z-10 w-full mt-2 bg-white border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {filteredStudents.map((student) => (
-            <button
+      {loading && <p className="text-sm text-gray-500 mt-1">Buscando...</p>}
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+
+      {/* Dropdown */}
+      {showDropdown && results.length > 0 && (
+        <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-56 overflow-auto">
+          {results.map((student) => (
+            <li
               key={student.id}
-              type="button"
               onClick={() => handleSelect(student)}
-              className="w-full px-4 py-3 text-left hover:bg-surface transition-colors border-b border-border last:border-b-0"
+              className="px-4 py-2 cursor-pointer hover:bg-gray-100"
             >
-              <p className="font-medium text-foreground">{student.name}</p>
-              <p className="text-sm text-muted">{student.email}</p>
-              <p className="text-xs text-muted">{student.course}</p>
-            </button>
+              <div className="font-medium">{student.nome}</div>
+              <div className="text-sm text-gray-500">{student.email}</div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {selectedStudent && (
-        <div className="mt-3 p-3 bg-primary/10 rounded-lg">
-          <p className="text-sm font-medium text-foreground">{selectedStudent.name}</p>
-          <p className="text-xs text-muted">{selectedStudent.email}</p>
+        <div className="flex items-center justify-between mt-2 bg-gray-50 border rounded-md px-3 py-2">
+          <div>
+            <p className="font-medium">{selectedStudent.nome}</p>
+            <p className="text-sm text-gray-600">{selectedStudent.email}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-red-500 text-sm hover:underline"
+          >
+            Remover
+          </button>
         </div>
       )}
     </div>

@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation"
 import type { Transaction } from "@/types"
 
 interface Student {
-  id: string
-  name: string
+  ID: string
+  nome: string
   email: string
   course: string
 }
@@ -91,7 +91,9 @@ export default function ProfessorSendPage() {
 
     try {
       const token = localStorage.getItem("token")
+      console.log("Token:", token)
       if (!token) throw new Error("Token não encontrado")
+      console.log("Enviando aluno:", selectedStudent.ID)
 
       const res = await fetch("http://localhost:8080/api/professor/enviar-moedas", {
         method: "POST",
@@ -100,7 +102,7 @@ export default function ProfessorSendPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          aluno_id: selectedStudent.id,
+          aluno_id: selectedStudent.ID,
           valor: amountNum,
           motivo: reason,
         }),
@@ -112,10 +114,6 @@ export default function ProfessorSendPage() {
       }
 
       const data: Transaction = await res.json()
-
-      alert(
-        `Moedas enviadas com sucesso!\n\nAluno: ${selectedStudent.name}\nValor: ${amountNum}\nMotivo: ${reason}`
-      )
 
       // Atualiza saldo local
       setProfessor({ ...professor, saldo_moedas: professor.saldo_moedas - amountNum })
