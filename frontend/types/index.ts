@@ -33,6 +33,7 @@ export interface Company extends User {
 }
 
 export interface Transaction {
+  amount: number
   id: string
   alunoId?: string
   professorId?: string
@@ -41,6 +42,7 @@ export interface Transaction {
   valor?: number
   motivo?: string
   data: string
+  type?: "send" | "receive"
 }
 
 export interface Advantage {

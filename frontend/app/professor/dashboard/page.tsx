@@ -27,28 +27,32 @@ export default function ProfessorDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchPerfil = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true)
         const token = localStorage.getItem("token")
         if (!token) throw new Error("Token não encontrado")
 
-        const res = await fetch("http://localhost:8080/api/professor/perfil", {
+        // 🔹 1️⃣ Buscar perfil do professor
+        const resPerfil = await fetch("http://localhost:8080/api/professor/perfil", {
           headers: { Authorization: `Bearer ${token}` },
         })
+        if (!resPerfil.ok) throw new Error("Erro ao buscar perfil do professor")
+        const perfilData = await resPerfil.json()
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || "Erro ao buscar perfil")
-        }
+        // 🔹 2️⃣ Buscar extrato de transações
+        const resExtrato = await fetch("http://localhost:8080/api/professor/extrato", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!resExtrato.ok) throw new Error("Erro ao buscar transações")
+        const extratoData = await resExtrato.json()
 
-        const data = await res.json()
-        // garante que transacoes_enviadas nunca seja undefined
+        // 🔹 3️⃣ Atualiza o estado com perfil + transações
         setProfessor({
-          nome: data.nome || "",
-          saldo_moedas: data.saldo_moedas || 0,
-          departamento: data.departamento || "",
-          transacoes_enviadas: data.transacoes_enviadas || [],
+          nome: perfilData.nome || "",
+          saldo_moedas: perfilData.saldo_moedas || 0,
+          departamento: perfilData.departamento || "",
+          transacoes_enviadas: extratoData || [],
         })
       } catch (err: any) {
         console.error(err)
@@ -58,7 +62,7 @@ export default function ProfessorDashboard() {
       }
     }
 
-    fetchPerfil()
+    fetchData()
   }, [])
 
   if (loading)
@@ -97,7 +101,7 @@ export default function ProfessorDashboard() {
           />
           <StatCard
             title="Moedas Distribuídas"
-            value={professor.transacoes_enviadas.reduce((acc, t) => acc + (t.amount || 0), 0)}
+            value={professor.transacoes_enviadas.reduce((acc, t) => acc + (t.valor || 0), 0)}
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -143,7 +147,9 @@ export default function ProfessorDashboard() {
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-200 shadow-sm">
             {professor.transacoes_enviadas.length > 0 ? (
-              professor.transacoes_enviadas.map(tx => <TransactionItem key={tx.id} transaction={tx} />)
+              professor.transacoes_enviadas.slice(0, 5).map(tx => (
+                <TransactionItem key={tx.id} transaction={tx} />
+              ))
             ) : (
               <p className="p-4 text-gray-500">Nenhuma transação encontrada</p>
             )}

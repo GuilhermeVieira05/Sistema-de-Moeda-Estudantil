@@ -9,23 +9,23 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   const isNegative = transaction.motivo != "redeem"
 
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-surface rounded-lg transition-colors">
+    <div className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
       <div className="flex items-center gap-4">
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            isPositive ? "bg-success/10" : isNegative ? "bg-error/10" : "bg-primary/10"
+            isPositive ? "bg-green-100" : isNegative ? "bg-red-100" : "bg-gray-200"
           }`}
         >
           {isPositive ? (
-            <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           ) : isNegative ? (
-            <svg className="w-5 h-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
             </svg>
           ) : (
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -37,14 +37,23 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
         </div>
 
         <div>
-          <p className="font-medium text-foreground">{transaction.motivo}</p>
+          <p className="font-medium text-gray-800">{transaction.motivo}</p>
           <p className="text-sm text-gray-500">{transaction.data}</p>
-          {transaction.professor?.nome && <p className="text-xs text-blue-600">De: {transaction.professor?.nome}</p>}
-          {transaction.aluno?.nome && <p className="text-xs text-blue-600">Para: {transaction.aluno?.nome}</p>}
+
+          {transaction.professor?.nome && (
+            <p className="text-xs text-gray-400">De: {transaction.professor?.nome}</p>
+          )}
+          {transaction.aluno?.nome && (
+            <p className="text-xs text-gray-400">Para: {transaction.aluno?.nome}</p>
+          )}
         </div>
       </div>
 
-      <div className={`font-bold ${isPositive ? "text-success" : isNegative ? "text-error" : "text-foreground"}`}>
+      <div
+        className={`font-semibold ${
+          isPositive ? "text-green-600" : isNegative ? "text-red-500" : "text-gray-600"
+        }`}
+      >
         {isPositive ? "+" : isNegative ? "-" : ""}
         {transaction.valor}
       </div>
