@@ -44,6 +44,8 @@ export default function Page() {
         router.push("/company/dashboard") 
       } else if (data.user.role === "instituicao") {
         router.push("/institution/dashboard")
+      }else if (data.user.role === "professor") {
+        router.push("/professor/dashboard")
       } else {
         router.push("/")
       }

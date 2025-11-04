@@ -1,6 +1,11 @@
 "use client"
 import AuthLayout from "@/components/auth-layout"
+import Button from "@/components/button"
 import RegisterForm from "@/components/register-form"
+import TextField from "@/components/text-field"
+import Link from "next/link"
+import { useRouter } from "next/router"
+import { useState } from "react"
 
 export default function CompanyRegisterPage() {
   const router = useRouter()

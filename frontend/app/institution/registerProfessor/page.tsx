@@ -62,9 +62,14 @@ export default function ProfessorRegisterPage() {
     const instituicaoId = institution?.id || 1
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register/professor", {
+      const token = localStorage.getItem("token")
+
+      const response = await fetch("http://localhost:8080/api/instituicao/professores", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // 🔹 aqui
+        },
         body: JSON.stringify({
           nome: formData.name,
           email: formData.email,
@@ -76,6 +81,7 @@ export default function ProfessorRegisterPage() {
           departamento: formData.course,
         }),
       })
+      
 
       if (!response.ok) {
         const data = await response.json()
@@ -85,7 +91,6 @@ export default function ProfessorRegisterPage() {
       }
 
       alert("✅ Professor criado com sucesso!")
-      router.push("/login")
     } catch (err) {
       console.error("❌ Erro:", err)
       alert("Erro ao conectar com o servidor")

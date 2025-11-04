@@ -40,7 +40,7 @@ export default function InstitutionRegisterPage() {
           nome: formData.name,
           cnpj: formData.cnpj,
           email: formData.email,
-          senha: formData.password,
+          password: formData.password,
         }),
       })
 
