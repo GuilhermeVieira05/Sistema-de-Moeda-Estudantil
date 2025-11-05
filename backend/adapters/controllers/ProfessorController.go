@@ -4,7 +4,6 @@ import (
 	"backend/application/services"
 	"fmt"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -76,6 +75,6 @@ func (ctrl *ProfessorController) EnviarMoedas(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao enviar moedas: " + err.Error()})
 		return
 	}
-
+	
 	c.JSON(http.StatusCreated, transacao)
 }

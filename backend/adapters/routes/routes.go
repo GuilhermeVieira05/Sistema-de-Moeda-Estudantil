@@ -31,6 +31,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			aluno.PUT("", c.AlunoController.UpdatePerfil)
 			aluno.DELETE("", c.AlunoController.DeletePerfil)
 			aluno.PATCH("/saldo", c.AlunoController.UpdateSaldo)
+			aluno.GET("/prefix", c.AlunoController.GetAlunosByPrefix)
 		}
 
 		professor := protected.Group("/professor")
@@ -40,6 +41,8 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			professor.GET("/extrato", c.ProfessorController.GetExtrato)
 			professor.POST("/enviar-moedas", c.ProfessorController.EnviarMoedas)
 			professor.GET("/alunos", c.AlunoController.ListAlunos)
+			professor.GET("/prefix", c.AlunoController.GetAlunosByPrefix)
+
 		}
 
 		empresa := protected.Group("/empresa")

@@ -150,3 +150,8 @@ func (s *AlunoService) DeleteAlunoPerfil(userID uint) error {
 
 	return nil
 }
+
+
+func (s * AlunoService) GetAlunosByPrefix(prefix string) (*[]model.Aluno, error) {
+	return s.alunoRepo.GetAlunoByPrefix(prefix)
+}

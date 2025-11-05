@@ -6,12 +6,12 @@ import (
 	"backend/container"
 	"log"
 	"strings"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
 	cfg := config.LoadConfig()
 
 	db, err := config.Connect(cfg)
@@ -41,4 +41,5 @@ func main() {
 
 	log.Println("🚀 Servidor iniciado na porta 8080")
 	r.Run(":8080")
+
 }

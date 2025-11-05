@@ -58,3 +58,19 @@ func (r *AlunoRepository) List() ([]model.Aluno, error) {
 func (r *AlunoRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Aluno{}, id).Error
 }
+
+func (r *AlunoRepository) GetAlunoByPrefix(prefix string) (*[]model.Aluno, error) {
+	var alunos []model.Aluno
+
+	err := r.db.
+		Preload("User").
+		Preload("InstituicaoEnsino").
+		Where("nome ILIKE ?", prefix+"%").
+		Find(&alunos).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &alunos, nil
+}

@@ -4,6 +4,7 @@ import (
 	"backend/adapters/repositories"
 	"backend/application/model"
 	"errors"
+	"backend/emailSender"
 	"fmt"
 	// "time" // Removido, pois o DB define o DataHora via default
 )
@@ -108,5 +109,7 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 	transacao.Professor = *professor
 	transacao.Aluno = *aluno
 
+
+	emailsender.SendEmail(professor.User.Email,aluno.User.Email,"moeda",input.Valor)
 	return transacao, nil
 }

@@ -128,3 +128,20 @@ func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
 	c.transacaoService.CreateTransacao(transacao)
     ctx.JSON(http.StatusOK, aluno)
 }
+
+
+func (c *AlunoController) GetAlunosByPrefix(ctx *gin.Context) {
+	prefix := ctx.Query("prefix")
+	if prefix == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Prefixo é obrigatório"})
+		return
+	}
+
+	alunos, err := c.alunoService.GetAlunosByPrefix(prefix)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar alunos: " + err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, alunos)
+}
