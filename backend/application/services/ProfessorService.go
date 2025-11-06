@@ -111,6 +111,7 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 	transacao.Aluno = *aluno
 
 
-	emailsender.SendEmail(professor.User.Email,aluno.User.Email,"moeda",input.Valor)
+	emailsender.SendEmail(aluno.User.Email,"aluno",input.Valor)
+	emailsender.SendEmail(professor.User.Email,"professor",input.Valor)
 	return transacao, nil
 }

@@ -37,6 +37,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	
 	routes.SetupRoutes(r, c)
 
 	log.Println("🚀 Servidor iniciado na porta 8080")
