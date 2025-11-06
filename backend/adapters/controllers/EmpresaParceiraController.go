@@ -41,6 +41,35 @@ type CriarVantagemRequest struct {
 	CustoMoedas int    `json:"custo_moedas" binding:"required,gt=0"`
 }
 
+func (ctrl *EmpresaParceiraController) GetVantagem(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	// 1) Busca a empresa do usuário
+	empresa, err := ctrl.empresaService.GetEmpresaByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Empresa não encontrada"})
+		return
+	}
+
+	// 2) Converte o :id da rota
+	idParam := c.Param("id")
+	vID, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	// 3) **USE empresa.ID AQUI** (não o userID)
+	//    Isso gera: WHERE empresa_parceira_id = 1 AND id = 3
+	vantagem, err := ctrl.vantagemService.FindByEmpresaAndID(empresa.ID, uint(vID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Vantagem não encontrada"})
+		return
+	}
+
+	c.JSON(http.StatusOK, vantagem)
+}
+
 func (h *EmpresaParceiraController) CriarVantagem(c *gin.Context) {
 	userID := c.GetUint("user_id")
 

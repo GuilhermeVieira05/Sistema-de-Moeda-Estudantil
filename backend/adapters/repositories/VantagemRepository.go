@@ -31,6 +31,19 @@ func (r *VantagemRepository) Update(vantagem *model.Vantagem) error {
 	return r.db.Save(vantagem).Error
 }
 
+func (r *VantagemRepository) FindByEmpresaAndID(empresaID uint, id uint) (*model.Vantagem, error) {
+	var vantagem model.Vantagem
+	err := r.db.
+		Where("empresa_parceira_id = ? AND id = ?", empresaID, id).
+		Preload("EmpresaParceira").
+		First(&vantagem).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &vantagem, nil
+}
+
 func (r *VantagemRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Vantagem{}, id).Error
 }
