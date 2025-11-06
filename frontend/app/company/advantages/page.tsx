@@ -31,7 +31,7 @@ export default function CompanyAdvantagesPage() {
           return
         }
 
-        // 🔹 Buscar nome da empresa
+        // Buscar empresa
         const perfilRes = await fetch("http://localhost:8080/api/empresa/perfil", {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -39,13 +39,24 @@ export default function CompanyAdvantagesPage() {
         const perfilData = await perfilRes.json()
         setCompanyName(perfilData.nome)
 
-        // 🔹 Buscar vantagens da empresa logada
+        // Buscar vantagens
         const res = await fetch("http://localhost:8080/api/empresa/vantagens", {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error("Erro ao buscar vantagens")
+
         const data = await res.json()
-        setAdvantages(data)
+
+        // ✅ Converter retorno do backend
+        const formatted: Advantage[] = data.map((v: any) => ({
+          id: v.ID, // <-- Backend retorna ID com letra maiúscula
+          titulo: v.titulo,
+          descricao: v.descricao,
+          foto_url: v.foto_url,
+          custo_moedas: v.custo_moedas,
+        }))
+
+        setAdvantages(formatted)
       } catch (err) {
         console.error("Erro ao buscar vantagens:", err)
         alert("Erro ao carregar vantagens.")
@@ -103,11 +114,11 @@ export default function CompanyAdvantagesPage() {
         {/* Lista de vantagens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAdvantages.length > 0 ? (
-            filteredAdvantages.map((adv, index) => (
+            filteredAdvantages.map((adv) => (
               <AdvantageCard
-                key={adv.id ?? `adv-${index}`}
+                key={adv.id} // ✅ Agora existe e é único
                 advantage={{
-                  id: String(adv.id ?? index),
+                  id: adv.id.toString(),
                   companyId: "",
                   companyName,
                   title: adv.titulo,
@@ -115,6 +126,7 @@ export default function CompanyAdvantagesPage() {
                   cost: adv.custo_moedas,
                   imageUrl: adv.foto_url || "/placeholder.svg",
                 }}
+                onEdit={() => router.push(`/company/advantages/edit?id=${adv.id}`)}
               />
             ))
           ) : (
@@ -122,7 +134,6 @@ export default function CompanyAdvantagesPage() {
               Nenhuma vantagem encontrada
             </div>
           )}
-
         </div>
       </div>
     </DashboardLayout>

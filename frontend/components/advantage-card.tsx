@@ -2,25 +2,46 @@
 
 import type { Advantage } from "@/types"
 import Button from "./button"
+import IconButton from "@mui/material/IconButton"
+import EditIcon from "@mui/icons-material/Edit"
+import { useRouter } from "next/navigation"
 
 interface AdvantageCardProps {
   advantage: Advantage
   onRedeem?: (advantage: Advantage) => void
   userBalance?: number
   isLoading?: boolean 
+  onEdit?: (advantage: Advantage) => void
 }
 
 export default function AdvantageCard({
   advantage,
   onRedeem,
   userBalance,
+  onEdit,
   isLoading = false, 
 }: AdvantageCardProps) {
   const canAfford = userBalance !== undefined && userBalance >= advantage.cost
+  const router = useRouter()
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
       <div className="aspect-video bg-gray-100 relative overflow-hidden">
+        {/* ✅ Botão de Editar com MUI */}
+        <IconButton
+          onClick={() => onEdit?.(advantage)}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            bgcolor: "white",
+            zIndex: 20,
+            "&:hover": { bgcolor: "#e5e7eb" },
+          }}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
         <img
           src={advantage.imageUrl || "/placeholder.svg"}
           alt={advantage.title}

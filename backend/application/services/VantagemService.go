@@ -28,6 +28,10 @@ func (s *VantagemService) CreateVantagem(vantagem *model.Vantagem) error {
 	return s.vantagemRepo.Create(vantagem)
 }
 
+func (s *VantagemService) FindByEmpresaAndID(empresaID uint, id uint) (*model.Vantagem, error) {
+	return s.vantagemRepo.FindByEmpresaAndID(empresaID, id)
+}
+
 func (s *VantagemService) UpdateVantagem(id uint, vantagem *model.Vantagem) error {
 	existing, err := s.vantagemRepo.FindByID(id)
 	if err != nil {

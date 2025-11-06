@@ -54,6 +54,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			empresa.PUT("/vantagens/:id", c.EmpresaController.AtualizarVantagem)
 			empresa.DELETE("/vantagens/:id", c.EmpresaController.DeletarVantagem)
 			empresa.GET("/vantagens", c.EmpresaController.ListVantagens)
+			empresa.GET("/vantagens/:id", c.EmpresaController.GetVantagem)
 			empresa.GET("/resgates", c.EmpresaController.ListResgates)
 			empresa.GET("/parcerias", c.ParceriaController.GetParceriasByEmpresa)
 		}
