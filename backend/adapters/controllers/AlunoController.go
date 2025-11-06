@@ -118,10 +118,10 @@ func (c *AlunoController) UpdateSaldo(ctx *gin.Context) {
     }
 
 	transacao := &model.TransacaoMoeda{
-		AlunoID:   aluno.ID,
-		ProfessorID: 0, 
+		AlunoID:   &aluno.ID,
+		ProfessorID: nil,
 		Valor:     req.Valor,
-		Motivo:   "Ajuste de saldo pelo administrador",
+		Motivo:   "Resgate de Vantagem",
 		DataHora: time.Now(),
 	}
 

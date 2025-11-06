@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"backend/application/services"
-	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
@@ -46,26 +45,16 @@ func (ctrl *ProfessorController) GetExtrato(c *gin.Context) {
 
 // Rota: POST /api/professor/enviar-moedas
 func (ctrl *ProfessorController) EnviarMoedas(c *gin.Context) {
-	// Pega o userID do professor logado (quem está enviando)
 	userID := c.GetUint("user_id")
-	userID = 22
 
-	fmt.Print("UserID do professor logado:", userID)
-	// var idOriginal int = 22
-	// idUint := uint(idOriginal) 
-
-	// CORRIGIDO: Usa o DTO 'EnviarMoedasInput' definido no package 'services'.
-	// Esse DTO agora inclui 'Motivo'.
 	var input services.EnviarMoedasInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de entrada inválidos: " + err.Error()})
 		return
 	}
 
-	// O service aceitará o input (com AlunoID, Valor e Motivo)
 	transacao, err := ctrl.service.EnviarMoedas(userID, &input)
 	if err != nil {
-		// Segue o padrão do AlunoController.UpdateSaldo para erros específicos
 		if err.Error() == "saldo insuficiente" {
 			c.JSON(http.StatusConflict, gin.H{"error": "Saldo insuficiente"})
 			return

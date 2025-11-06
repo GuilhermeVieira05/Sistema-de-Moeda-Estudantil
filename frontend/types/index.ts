@@ -38,7 +38,7 @@ export interface Transaction {
   amount: number
   id: string
   aluno_id?: string
-  professorId?: string
+  professor_id?: string
   aluno?: Student
   professor?: Professor
   valor?: number

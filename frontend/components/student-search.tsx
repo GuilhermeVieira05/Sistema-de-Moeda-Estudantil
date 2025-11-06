@@ -1,22 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
-interface Student {
-  id: string
-  nome: string
-  email: string
-  course: string
-}
+import type { Student } from "@/types"
 
 interface StudentSearchProps {
-  onSelect: (student: Student) => void
-  selectedStudent?: Student
+  onSelect: (student?: Partial<Student>) => void
+  selectedStudent?: Partial<Student>
 }
 
 export default function StudentSearch({ onSelect, selectedStudent }: StudentSearchProps) {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<Student[]>([])
+  const [results, setResults] = useState<Partial<Student>[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showDropdown, setShowDropdown] = useState(false)
@@ -47,7 +41,17 @@ export default function StudentSearch({ onSelect, selectedStudent }: StudentSear
         }
 
         const data = await res.json()
-        setResults(data)
+
+        // Normalize backend result shape (could be { ID, Nome, Email } or { id, nome, email })
+        const normalized: Partial<Student>[] = (data || []).map((s: any) => ({
+          id: String(s.ID ?? s.id ?? s.Id ?? ""),
+          nome: s.Nome ?? s.nome ?? s.user?.nome ?? s.User?.nome ?? "",
+          email: s.User?.Email ?? s.email ?? s.user?.email ?? s.Email ?? "",
+          // course could be Curso or course
+          course: s.Curso ?? s.course ?? undefined,
+        }))
+
+        setResults(normalized)
         setShowDropdown(true)
       } catch (err: any) {
         setError(err.message || "Erro ao buscar alunos")
@@ -60,15 +64,15 @@ export default function StudentSearch({ onSelect, selectedStudent }: StudentSear
     return () => clearTimeout(delayDebounce)
   }, [query])
 
-  const handleSelect = (student: Student) => {
+  const handleSelect = (student: Partial<Student>) => {
     onSelect(student)
-    setQuery(student.nome)
+    setQuery(student.nome ?? "")
     setShowDropdown(false)
   }
 
   const handleClear = () => {
     setQuery("")
-    onSelect(undefined as any)
+    onSelect(undefined)
     setResults([])
   }
 

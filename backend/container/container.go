@@ -37,12 +37,12 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 	// --- Services ---
 	emailService := services.NewEmailService(cfg)
 	alunoService := services.NewAlunoService(alunoRepo, userRepo, emailService, transacaoMoedaRepo)
-	userService := services.NewUserService(userRepo, cfg, db) // UserService ainda parece precisar do DB
+	userService := services.NewUserService(userRepo, cfg, db) 
 	empresaService := services.NewEmpresaParceiraService(empresaRepo, userRepo)
 
 	professorService := services.NewProfessorService(professorRepo, alunoRepo, transacaoMoedaRepo)
 
-	resgateVantagemService := services.NewResgateVantagemService(resgateVantagemRepo, alunoRepo, vantagemRepo, emailService)
+	resgateVantagemService := services.NewResgateVantagemService(resgateVantagemRepo, alunoRepo, vantagemRepo, emailService, transacaoMoedaRepo)
 	transacaoMoedaService := services.NewTransacaoMoedaService(transacaoMoedaRepo, professorRepo, alunoRepo, emailService)
 	vantagemService := services.NewVantagemService(vantagemRepo, empresaRepo)
 

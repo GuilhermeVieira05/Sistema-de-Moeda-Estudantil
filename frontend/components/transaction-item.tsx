@@ -2,12 +2,26 @@ import type { Transaction } from "@/types"
 
 interface TransactionItemProps {
   transaction: Transaction
+  userType?: "professor" | "student"
 }
 
-export default function TransactionItem({ transaction }: TransactionItemProps) {
-  const isPositive = transaction.valor ? "receive" : "redeem"
-  const isNegative = transaction.motivo != "redeem"
+export default function TransactionItem({ transaction, userType }: TransactionItemProps) {
+  let isPositive = false
+  let isNegative = false
 
+  if (userType === "professor") {
+  if (transaction.aluno_id) {
+     isNegative = true
+  } else if (!transaction.aluno_id) {
+     isPositive = true
+  }
+  } else if (userType === "student") {
+    if (transaction.professor_id) {
+      isPositive = true
+    } else if (!transaction.professor_id) {
+      isNegative = true
+    }
+  }
   return (
     <div className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
       <div className="flex items-center gap-4">
@@ -53,8 +67,8 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
         className={`font-semibold ${
           isPositive ? "text-green-600" : isNegative ? "text-red-500" : "text-gray-600"
         }`}
-      >
-        {isPositive ? "+" : isNegative ? "-" : ""}
+        >
+          {transaction.valor! > 0 && isPositive ? "+" : isNegative ? "-" : ""}
         {transaction.valor}
       </div>
     </div>

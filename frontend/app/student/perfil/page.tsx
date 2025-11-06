@@ -162,7 +162,7 @@ export default function AlunoProfilePage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Meu Perfil</h1>
-          <p className="text-muted">Gerencie suas informações de estudante</p>
+          <p className="text-gray-500">Gerencie suas informações de estudante</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-border space-y-6">

@@ -153,7 +153,7 @@ export default function ProfessorDashboard() {
           <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-200 shadow-sm">
             {professor.transacoes_enviadas.length > 0 ? (
               professor.transacoes_enviadas.slice(0, 5).map(tx => (
-                <TransactionItem key={tx.id} transaction={tx} />
+                <TransactionItem key={tx.id} transaction={tx} userType="professor"/>
               ))
             ) : (
               <p className="p-4 text-gray-500">Nenhuma transação encontrada</p>

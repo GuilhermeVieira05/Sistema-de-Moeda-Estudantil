@@ -38,7 +38,6 @@ export default function StudentAdvantagesPage() {
         const response = await fetch("http://localhost:8080/api/vantagens")
         if (!response.ok) throw new Error(`Erro ao buscar vantagens: ${response.status}`)
         const data = await response.json()
-
         const mappedAdvantages: Advantage[] = data.map((item: any) => ({
           id: String(item.ID),
           companyId: String(item.empresa_parceira_id),

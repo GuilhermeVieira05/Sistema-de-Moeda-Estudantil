@@ -53,12 +53,13 @@ export default function StudentTransactionsPage() {
       fetchTransactions();
       fetchAluno()
     }, []) 
+  const filteredTransactions = transactions.filter((transaction => {
+    if (filter === "all") return true;
+    if (filter === "receive") return transaction.professor_id !== null;
+    if (filter === "redeem") return transaction.professor_id === null;
+    return false;
+  }));
 
-  const filteredTransactions = transactions
-
-  // const totalReceived = transactions.filter((t) => t.type === "receive").reduce((sum, t) => sum + t.amount, 0)
-
-  // const totalRedeemed = transactions.filter((t) => t.type === "redeem").reduce((sum, t) => sum + t.amount, 0)
 
   const totalReceived = transactions.filter((t) => t.valor && t.valor > 0).reduce((sum, t) => sum + (t.valor || 0), 0)
 
@@ -86,7 +87,7 @@ export default function StudentTransactionsPage() {
 
           <div className="bg-white rounded-xl p-6 border border-border">
             <p className="text-sm text-gray-500 mb-1">Total Resgatado</p>
-            <p className="text-3xl font-bold text-error">-{totalRedeemed}</p>
+            <p className="text-3xl font-bold text-error">{totalRedeemed}</p>
           </div>
         </div>
 
@@ -123,7 +124,7 @@ export default function StudentTransactionsPage() {
         {/* Transactions List */}
         <div className="bg-white rounded-xl border border-border divide-y divide-border">
           {filteredTransactions.map((transaction) => (
-            <TransactionItem key={transaction.id} transaction={transaction} />
+            <TransactionItem key={transaction.id} transaction={transaction} userType="student" />
           ))}
         </div>
 

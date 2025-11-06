@@ -6,11 +6,8 @@ import (
 	"errors"
 	"backend/emailSender"
 	"fmt"
-	// "time" // Removido, pois o DB define o DataHora via default
 )
 
-// EnviarMoedasInput é o DTO (Data Transfer Object) para o envio de moedas.
-// Esta é a versão CORRETA, usando Motivo.
 type EnviarMoedasInput struct {
 	AlunoID uint   `json:"aluno_id" binding:"required"`
 	Valor   int    `json:"valor" binding:"required"`
@@ -57,14 +54,12 @@ func (s *ProfessorService) GetExtrato(userID uint) ([]model.TransacaoMoeda, erro
 // EnviarMoedas (Assinatura corrigida para receber userID e o DTO local)
 func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (*model.TransacaoMoeda, error) {
 
-	// 1. Busca o professor (remetente) pelo UserID
 	professor, err := s.professorRepo.FindByUserID(userID)
 	fmt.Print(professor, err, userID)
 	if err != nil {
 		return nil, errors.New("professor não encontrado")
 	}
 
-	// 2. Verifica se o professor tem saldo
 	if professor.SaldoMoedas < input.Valor {
 		return nil, errors.New("saldo insuficiente")
 	}
@@ -72,7 +67,6 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 		return nil, errors.New("o valor deve ser positivo")
 	}
 
-	// 3. Busca o aluno (destinatário)
 	aluno, err := s.alunoRepo.FindByID(input.AlunoID)
 	if err != nil {
 		return nil, errors.New("aluno não encontrado")
@@ -96,8 +90,8 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 
 	// 6. Cria o registro da transação
 	transacao := &model.TransacaoMoeda{
-		ProfessorID: professor.ID,
-		AlunoID:     aluno.ID,
+		ProfessorID: &professor.ID,
+		AlunoID:     &aluno.ID,
 		Valor:       input.Valor,
 		Motivo:      input.Motivo,
 	}

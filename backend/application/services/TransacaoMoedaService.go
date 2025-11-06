@@ -71,8 +71,8 @@ func (s *TransacaoMoedaService) EnviarMoedas(professorID, alunoID uint, valor in
 
 	// Criar transação
 	transacao := &model.TransacaoMoeda{
-		ProfessorID: professorID,
-		AlunoID:     alunoID,
+		ProfessorID: &professor.ID,
+		AlunoID:     &aluno.ID,
 		Valor:       valor,
 		Motivo:      motivo,
 		DataHora:    time.Now(),

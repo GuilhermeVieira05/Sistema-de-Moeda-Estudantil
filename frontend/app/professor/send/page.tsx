@@ -7,14 +7,7 @@ import TextField from "@/components/text-field"
 import Button from "@/components/button"
 import StudentSearch from "@/components/student-search"
 import { useRouter } from "next/navigation"
-import type { Transaction } from "@/types"
-
-interface Student {
-  ID: string
-  nome: string
-  email: string
-  course: string
-}
+import type { Transaction, Student } from "@/types"
 
 interface Professor {
   nome: string
@@ -24,7 +17,7 @@ interface Professor {
 export default function ProfessorSendPage() {
   const router = useRouter()
   const [professor, setProfessor] = useState<Professor | null>(null)
-  const [selectedStudent, setSelectedStudent] = useState<Student | undefined>()
+  const [selectedStudent, setSelectedStudent] = useState<Partial<Student> | undefined>()
   const [amount, setAmount] = useState("")
   const [reason, setReason] = useState("")
   const [loading, setLoading] = useState(false)
@@ -93,7 +86,7 @@ export default function ProfessorSendPage() {
       const token = localStorage.getItem("token")
       console.log("Token:", token)
       if (!token) throw new Error("Token não encontrado")
-      console.log("Enviando aluno:", selectedStudent.ID)
+  console.log("Enviando aluno:", selectedStudent?.id)
 
       const res = await fetch("http://localhost:8080/api/professor/enviar-moedas", {
         method: "POST",
@@ -102,7 +95,7 @@ export default function ProfessorSendPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          aluno_id: selectedStudent.ID,
+          aluno_id: selectedStudent?.id,
           valor: amountNum,
           motivo: reason,
         }),
@@ -153,7 +146,7 @@ export default function ProfessorSendPage() {
 
         {/* Send Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 border border-border space-y-6">
-          <StudentSearch onSelect={setSelectedStudent} selectedStudent={selectedStudent} />
+          <StudentSearch onSelect={(s) => setSelectedStudent(s)} selectedStudent={selectedStudent} />
 
           <TextField
             label="Quantidade de moedas"

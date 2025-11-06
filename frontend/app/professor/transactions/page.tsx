@@ -144,7 +144,7 @@ export default function ProfessorTransactionsPage() {
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-200">
           {filteredTransactions.length > 0 ? (
             filteredTransactions.map((transaction) => (
-              <TransactionItem key={transaction.id} transaction={transaction} />
+              <TransactionItem key={transaction.id} transaction={transaction} userType="professor" />
             ))
           ) : (
             <div className="text-center py-12">
