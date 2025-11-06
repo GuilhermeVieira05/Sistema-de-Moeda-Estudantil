@@ -141,7 +141,7 @@ export default function ProfessorSendPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Enviar Moedas</h1>
-          <p className="text-muted">Reconheça o mérito dos seus alunos</p>
+          <p className="text-gray-500">Reconheça o mérito dos seus alunos</p>
         </div>
 
         {/* Balance Card */}

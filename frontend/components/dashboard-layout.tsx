@@ -14,7 +14,7 @@ interface MenuItem {
 interface DashboardLayoutProps {
   children: React.ReactNode
   userType: "student" | "professor" | "company" | "admin"
-  userName: string
+  userName?: string
   balance?: number
   menuItems?: MenuItem[]
 }

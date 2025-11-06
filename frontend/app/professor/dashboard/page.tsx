@@ -7,11 +7,14 @@ import TransactionItem from "@/components/transaction-item"
 import Button from "@/components/button"
 import { useRouter } from "next/navigation"
 import type { Transaction } from "@/types"
+import { Balance } from "@mui/icons-material"
 
 interface Professor {
   nome: string
   saldo_moedas: number
   departamento: string
+  total_send: number
+  total_receive: number
   transacoes_enviadas: Transaction[]
 }
 
@@ -21,6 +24,8 @@ export default function ProfessorDashboard() {
     nome: "",
     saldo_moedas: 0,
     departamento: "",
+    total_send: 0,
+    total_receive: 0,
     transacoes_enviadas: [],
   })
   const [loading, setLoading] = useState(true)
@@ -53,6 +58,8 @@ export default function ProfessorDashboard() {
           saldo_moedas: perfilData.saldo_moedas || 0,
           departamento: perfilData.departamento || "",
           transacoes_enviadas: extratoData || [],
+          total_receive: perfilData.total_receive,
+          total_send: perfilData.total_send
         })
       } catch (err: any) {
         console.error(err)
@@ -94,9 +101,7 @@ export default function ProfessorDashboard() {
             title="Saldo Disponível"
             value={professor.saldo_moedas}
             icon={
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-              </svg>
+              <Balance></Balance>
             }
           />
           <StatCard

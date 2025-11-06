@@ -27,7 +27,7 @@ export default function Button({
     "inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 
   const variantStyles = {
-    primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+    primary: "bg-primary text-primary-foreground hover:bg-primary/90 text-white",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
     outline:
       "border border-input bg-background hover:bg-accent hover:text-accent-foreground",

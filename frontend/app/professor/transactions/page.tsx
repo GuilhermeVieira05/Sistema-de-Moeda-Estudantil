@@ -3,16 +3,12 @@
 import { useState, useEffect } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import TransactionItem from "@/components/transaction-item"
-import type { Transaction } from "@/types"
+import type { Professor, Transaction } from "@/types"
 
 export default function ProfessorTransactionsPage() {
   const [filter, setFilter] = useState<"all" | "send" | "receive">("all")
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [professor, setProfessor] = useState<{ id: string; name: string; balance: number }>({
-    id: "",
-    name: "",
-    balance: 0,
-  })
+  const [professor, setProfessor] = useState<Professor>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,12 +23,8 @@ export default function ProfessorTransactionsPage() {
         })
         if (!profileRes.ok) throw new Error("Erro ao carregar perfil")
         const profileData = await profileRes.json()
-
-        setProfessor({
-          id: profileData.id,
-          name: profileData.nome,
-          balance: profileData.saldo,
-        })
+        console.log("ProfileData", profileData)
+        setProfessor(profileData)
 
         const transRes = await fetch("http://localhost:8080/api/professor/extrato", {
           headers: { Authorization: `Bearer ${token}` },
@@ -40,6 +32,8 @@ export default function ProfessorTransactionsPage() {
         if (!transRes.ok) throw new Error("Erro ao carregar extrato")
 
         const transData: Transaction[] = await transRes.json()
+        transData.forEach((t) => console.log(t.aluno_id))
+  
 
       setTransactions(transData)
       } catch (err: any) {
@@ -52,17 +46,17 @@ export default function ProfessorTransactionsPage() {
     fetchData()
   }, [])
 
+  type FilterType = "all" | "send" | "receive";
+
   const filteredTransactions = transactions.filter(
-    (t) => filter === "all" || t.type === filter
-  )
+    (t) => filter === "all" || (filter === "send" && t.aluno_id) || (filter === "receive" && !t.aluno_id)
+  );
 
-  const totalSent = transactions
-    .filter((t) => t.type === "send")
-    .reduce((sum, t) => sum + (t.amount || 0), 0)
+  // Total de transações "enviadas" (com aluno_id)
+  const totalSent = professor?.total_send
 
-  const totalReceived = transactions
-    .filter((t) => t.type === "receive")
-    .reduce((sum, t) => sum + (t.amount || 0), 0)
+  // Total de transações "recebidas" (sem aluno_id, conforme sua regra)
+  const totalReceived = professor?.total_receive
 
   if (loading) {
     return (
@@ -83,8 +77,8 @@ export default function ProfessorTransactionsPage() {
   return (
     <DashboardLayout
       userType="professor"
-      userName={professor.name}
-      balance={professor.balance}
+      userName={professor?.nome}
+      balance={professor?.saldo_moedas}
     >
       <div className="space-y-6">
         <div>
@@ -96,12 +90,12 @@ export default function ProfessorTransactionsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Saldo Atual</p>
-            <p className="text-3xl font-bold text-gray-700">{professor.balance}</p>
+            <p className="text-3xl font-bold text-gray-700">{professor?.saldo_moedas}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Total Distribuído</p>
-            <p className="text-3xl font-bold text-red-500">-{totalSent}</p>
+            <p className="text-3xl font-bold text-red-500">{totalSent}</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-gray-200">

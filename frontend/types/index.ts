@@ -23,6 +23,8 @@ export interface Professor extends User {
   department: string
   institution: string
   saldo_moedas: number
+  total_send?: number
+  total_receive?: number
 }
 
 export interface Company extends User {
@@ -35,7 +37,7 @@ export interface Company extends User {
 export interface Transaction {
   amount: number
   id: string
-  alunoId?: string
+  aluno_id?: string
   professorId?: string
   aluno?: Student
   professor?: Professor

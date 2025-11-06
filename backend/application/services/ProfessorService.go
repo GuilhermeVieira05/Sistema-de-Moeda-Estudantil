@@ -82,6 +82,7 @@ func (s *ProfessorService) EnviarMoedas(userID uint, input *EnviarMoedasInput) (
 
 	// 4. Debita do professor
 	professor.SaldoMoedas -= input.Valor
+	professor.TotalSend += input.Valor
 	if err := s.professorRepo.Update(professor); err != nil {
 		return nil, errors.New("erro ao debitar do professor")
 	}
