@@ -29,7 +29,7 @@ func main() {
 
 	r.Use(cors.New(cors.Config{
 		AllowOriginFunc: func(origin string) bool {
-            return strings.HasPrefix(origin, "http://localhost:3001")
+            return strings.HasPrefix(origin, "http://localhost:3000")
         },
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
