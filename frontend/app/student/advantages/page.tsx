@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/dashboard-layout"
 import AdvantageCard from "@/components/advantage-card"
 import { Student, type Advantage } from "@/types"
-import { getAlunoData, updateAlunoSaldo } from "@/api/alunoApi"
+import { getAlunoData, resgatarVantagem, updateAlunoSaldo } from "@/api/alunoApi"
 import LoadingSpinner from "@/components/loading-spinner"
 
 export default function StudentAdvantagesPage() {
@@ -88,9 +88,15 @@ export default function StudentAdvantagesPage() {
     setRedeemingId(advantage.id)
 
     try {
-      const valorDebito = -advantage.cost
-      const alunoAtualizado = await updateAlunoSaldo(valorDebito)
-      setAluno(alunoAtualizado)
+      await resgatarVantagem(advantage.id)
+
+      setAluno(prevAluno => {
+        if (!prevAluno) return null
+        return {
+          ...prevAluno,
+          saldo_moedas: prevAluno.saldo_moedas - advantage.cost
+        }
+      })
 
       alert(
         `Vantagem "${advantage.title}" resgatada com sucesso!\n\nUm email com o cupom será enviado para você!`,

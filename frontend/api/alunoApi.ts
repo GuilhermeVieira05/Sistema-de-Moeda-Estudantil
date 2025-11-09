@@ -78,7 +78,7 @@ export async function resgatarVantagem(advantageId: string): Promise<Student> {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ vantagem_id: advantageId }), 
+    body: JSON.stringify({ vantagem_id: Number(advantageId) }), 
   });
 
   if (!response.ok) {
@@ -97,6 +97,8 @@ export async function resgatarVantagem(advantageId: string): Promise<Student> {
   const alunoData: Student = await response.json();
   return alunoData;
 }
+
+
 
 export async function updateAlunoSaldo(valor: number): Promise<Student> {
   const url = `${apiUrl}/aluno/saldo`; // Endpoint PATCH

@@ -69,6 +69,7 @@ func (s *ResgateVantagemService) ResgatarVantagem(userID, vantagemID uint) (*mod
         DataHora:    time.Now(),
         CodigoCupom: codigoCupom,
         Status:      "pendente",
+        DataExpiracao: time.Now().Add(30 * 24 * time.Hour),
     }
 
     if err := s.resgateRepo.Create(resgate); err != nil {
@@ -77,9 +78,6 @@ func (s *ResgateVantagemService) ResgatarVantagem(userID, vantagemID uint) (*mod
         return nil, fmt.Errorf("erro ao registrar resgate da vantagem: %w", err)
     }
 
-    // ---------------------------------------------------------------
-    // NOVO: Gerar Transação de Débito para o extrato do Aluno
-    // ---------------------------------------------------------------
     transacao := &model.TransacaoMoeda{
         AlunoID:     &aluno.ID,
         Valor:       int(vantagem.CustoMoedas), 
