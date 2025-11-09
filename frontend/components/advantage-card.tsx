@@ -10,8 +10,9 @@ interface AdvantageCardProps {
   advantage: Advantage
   onRedeem?: (advantage: Advantage) => void
   userBalance?: number
-  isLoading?: boolean 
+  isLoading?: boolean
   onEdit?: (advantage: Advantage) => void
+  isRedeemed?: boolean 
 }
 
 export default function AdvantageCard({
@@ -19,15 +20,36 @@ export default function AdvantageCard({
   onRedeem,
   userBalance,
   onEdit,
-  isLoading = false, 
+  isLoading = false,
+  isRedeemed = false, 
 }: AdvantageCardProps) {
   const canAfford = userBalance !== undefined && userBalance >= advantage.cost
   const router = useRouter()
 
+  const isDisabled =
+    isLoading || isRedeemed || advantage.quantidade === 0 || !canAfford
+
+  const getButtonText = () => {
+    if (isLoading) return "Resgatando..."
+    if (isRedeemed) return "Já Resgatado"
+    if (advantage.quantidade === 0) return "Esgotado"
+    if (canAfford) return "Resgatar Vantagem"
+    return "Saldo Insuficiente"
+  }
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative">
+      
+      {isRedeemed && (
+        <>
+          <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold z-20 shadow-lg">
+            RESGATADO
+          </div>
+          <div className="absolute inset-0 bg-white/50 z-10" />
+        </>
+      )}
+
       <div className="aspect-video bg-gray-100 relative overflow-hidden">
-        {/* ✅ Botão de Editar com MUI */}
         {onEdit && (
           <IconButton
             onClick={() => onEdit?.(advantage)}
@@ -35,21 +57,22 @@ export default function AdvantageCard({
             sx={{
               position: "absolute",
               top: 8,
-              left: 8,
+              left: 8, 
               bgcolor: "white",
-              zIndex: 20,
+              zIndex: 30, 
               "&:hover": { bgcolor: "#e5e7eb" },
             }}
           >
             <EditIcon fontSize="small" />
           </IconButton>
         )}
+
         <img
           src={advantage.imageUrl || "/placeholder.svg"}
           alt={advantage.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg z-20">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
             <path
@@ -64,18 +87,29 @@ export default function AdvantageCard({
 
       <div className="p-6">
         <div className="mb-4">
-          <h3 className="font-bold text-xl text-gray-900 mb-2 truncate">{advantage.title}</h3>
-          <p className="text-sm font-medium text-blue-600 truncate">{advantage.companyName}</p>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-xl text-gray-900 mb-2 truncate">
+              {advantage.title}
+            </h3>
+            <p className="text-sm font-medium text-gray-600">
+              {advantage.quantidade}/{advantage.estoque}
+            </p>
+          </div>
+          <p className="text-sm font-medium text-blue-600 truncate">
+            {advantage.companyName}
+          </p>
         </div>
 
-        <p className="text-sm text-gray-600 mb-6 line-clamp-2 min-h-[2.5rem]">{advantage.description}</p>
+        <p className="text-sm text-gray-600 mb-6 line-clamp-2 min-h-[2.5rem]">
+          {advantage.description}
+        </p>
 
         {onRedeem && (
           <Button
             onClick={() => onRedeem(advantage)}
-            disabled={!canAfford || isLoading} 
-            variant={canAfford ? "primary" : "outline"}
-            className="text-white !bg-accent flex items-center justify-center gap-2" 
+            disabled={isDisabled} 
+            variant={!isDisabled ? "primary" : "outline"}
+            className="flex items-center justify-center gap-2"
           >
             {isLoading && (
               <svg
@@ -99,7 +133,7 @@ export default function AdvantageCard({
                 ></path>
               </svg>
             )}
-            {isLoading ? "Resgatando..." : canAfford ? "Resgatar Vantagem" : "Saldo Insuficiente"}
+            {getButtonText()}
           </Button>
         )}
       </div>

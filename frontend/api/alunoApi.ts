@@ -1,5 +1,10 @@
-import { Student } from "@/types";
+import { Advantage, Student } from "@/types";
 import apiUrl from "./apiUrl";
+
+export type AdvantageWithStatus = {
+  vantagem: Advantage;
+  ja_resgatada: boolean;
+};
 
 export async function getAlunoData(): Promise<Student> {
   const url = `${apiUrl}/aluno/perfil`;
@@ -125,4 +130,41 @@ export async function updateAlunoSaldo(valor: number): Promise<Student> {
 
   const alunoData: Student = await response.json();
   return alunoData;
+}
+
+export async function getVantagensParaAluno(): Promise<AdvantageWithStatus[]> {
+  const url = `${apiUrl}/aluno/vantagens`; // A nova rota protegida
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // Requer autenticação
+    },
+  });
+
+  if (!response.ok) {
+    const errorData: { error: string } = await response.json();
+    throw new Error(`Erro ${response.status}: ${errorData.error || 'Falha ao buscar vantagens'}`);
+  }
+
+  const data = await response.json();
+  
+  const mappedData: AdvantageWithStatus[] = data.map((item: any) => ({
+    ja_resgatada: item.ja_resgatada,
+    vantagem: {
+      id: String(item.vantagem.ID),
+      companyId: String(item.vantagem.empresa_parceira_id),
+      companyName: item.vantagem.empresa_parceira?.nome || "Empresa Parceira",
+      title: item.vantagem.titulo,
+      description: item.vantagem.descricao,
+      cost: Number(item.vantagem.custo_moedas),
+      imageUrl: item.vantagem.foto_url || "/default.png",
+      quantidade: Number(item.vantagem.quantidade),
+      estoque: Number(item.vantagem.estoque), 
+    }
+  }));
+
+  return mappedData;
 }

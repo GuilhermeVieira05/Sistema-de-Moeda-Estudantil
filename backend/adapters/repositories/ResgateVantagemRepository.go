@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"backend/application/model"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -41,4 +42,18 @@ func (r *ResgateVantagemRepository) FindByCodigoCupom(codigo string) (*model.Res
 		return nil, err
 	}
 	return &resgate, nil
+}
+
+func (r *ResgateVantagemRepository) FindByAlunoAndVantagem(alunoID, vantagemID uint) (*model.ResgateVantagem, error) {
+    var resgate model.ResgateVantagem
+    err := r.db.Where("aluno_id = ? AND vantagem_id = ?", alunoID, vantagemID).First(&resgate).Error
+
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil
+        }
+        return nil, err
+    }
+    
+    return &resgate, nil
 }

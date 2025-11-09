@@ -28,6 +28,7 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 			aluno.GET("/perfil", c.AlunoController.GetPerfil)
 			aluno.GET("/extrato", c.AlunoController.GetExtrato)
 			aluno.POST("/resgatar-vantagem", c.VantagemController.ResgatarVantagem)
+			aluno.GET("/vantagens", c.VantagemController.ListVantagensParaAluno)
 			aluno.PUT("", c.AlunoController.UpdatePerfil)
 			aluno.DELETE("", c.AlunoController.DeletePerfil)
 			aluno.PATCH("/saldo", c.AlunoController.UpdateSaldo)

@@ -27,7 +27,6 @@ func (h *VantagemController) ListVantagens(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, vantagens)
 }
 
@@ -61,4 +60,15 @@ func (h *VantagemController) ResgatarVantagem(c *gin.Context) {
 		"message": "Vantagem resgatada com sucesso",
 		"resgate": resgate,
 	})
+}
+
+func (h *VantagemController) ListVantagensParaAluno(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+ 	vantagensDTO, err := h.vantagemService.ListVantagensParaAluno(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}	
+ 	c.JSON(http.StatusOK, vantagensDTO)
 }

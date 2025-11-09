@@ -44,7 +44,7 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 
 	resgateVantagemService := services.NewResgateVantagemService(resgateVantagemRepo, alunoRepo, vantagemRepo, emailService, transacaoMoedaRepo)
 	transacaoMoedaService := services.NewTransacaoMoedaService(transacaoMoedaRepo, professorRepo, alunoRepo, emailService)
-	vantagemService := services.NewVantagemService(vantagemRepo, empresaRepo)
+	vantagemService := services.NewVantagemService(vantagemRepo, empresaRepo, resgateVantagemRepo, alunoRepo)
 
 	instituicaoService := services.NewInstituicaoService(instituicaoRepo, professorRepo, userRepo, parceriaRepo)
 	parceriaService := services.NewParceriaService(parceriaRepo)

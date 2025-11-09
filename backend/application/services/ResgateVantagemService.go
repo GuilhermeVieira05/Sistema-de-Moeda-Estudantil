@@ -47,6 +47,14 @@ func (s *ResgateVantagemService) ResgatarVantagem(userID, vantagemID uint) (*mod
         return nil, errors.New("vantagem não encontrada")
     }
 
+    resgateExistente, err := s.resgateRepo.FindByAlunoAndVantagem(aluno.ID, vantagemID)
+    if err != nil {
+        return nil, fmt.Errorf("erro ao verificar resgate existente: %w", err)
+    }
+    if resgateExistente != nil {
+        return nil, errors.New("vantagem já resgatada anteriormente")
+    }
+
     // Verificar se vantagem está ativa
     if !vantagem.Ativa {
         return nil, errors.New("vantagem não está disponível")
@@ -55,6 +63,13 @@ func (s *ResgateVantagemService) ResgatarVantagem(userID, vantagemID uint) (*mod
     if aluno.SaldoMoedas < vantagem.CustoMoedas {
         return nil, errors.New("saldo insuficiente")
     }
+
+    if vantagem.Quantidade == 0 {
+        return nil, errors.New("vantagem esgotada")
+    }
+
+    vantagem.Quantidade -= 1
+    s.vantagemRepo.Update(vantagem)
 
     aluno.SaldoMoedas -= vantagem.CustoMoedas
     if err := s.alunoRepo.Update(aluno); err != nil {

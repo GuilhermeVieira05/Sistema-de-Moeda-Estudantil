@@ -55,6 +55,8 @@ export interface Advantage {
   description: string
   cost: number
   imageUrl: string
+  quantidade: number
+  estoque: number
 }
 
 export interface Redemption {

@@ -5,16 +5,24 @@ import StatCard from "@/components/stat-card"
 import AdvantageCard from "@/components/advantage-card"
 import TransactionItem from "@/components/transaction-item"
 import { Student, type Advantage, type Transaction } from "@/types"
-import { getAlunoData, getExtrato, updateAlunoSaldo } from "@/api/alunoApi" 
+
+import {
+  getAlunoData,
+  getExtrato,
+  getVantagensParaAluno,
+  resgatarVantagem, 
+  type AdvantageWithStatus, 
+} from "@/api/alunoApi"
 import { useEffect, useState } from "react"
 import LoadingSpinner from "@/components/loading-spinner"
 
 export default function StudentDashboard() {
   const [aluno, setAluno] = useState<Student | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(true) 
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [advantages, setAdvantages] = useState<Advantage[]>([]) 
+
+  const [advantages, setAdvantages] = useState<AdvantageWithStatus[]>([])
   const [advantagesLoading, setAdvantagesLoading] = useState(true)
   const [advantagesError, setAdvantagesError] = useState<string | null>(null)
   const [redeemingId, setRedeemingId] = useState<string | null>(null)
@@ -46,27 +54,13 @@ export default function StudentDashboard() {
     fetchData()
   }, [])
 
-  // 🔹 Fetch advantages from backend
   useEffect(() => {
     const fetchAdvantages = async () => {
       setAdvantagesLoading(true)
       setAdvantagesError(null)
       try {
-        const response = await fetch("http://localhost:8080/api/vantagens")
-        if (!response.ok)
-          throw new Error(`Erro ao buscar vantagens: ${response.status} ${response.statusText}`)
-        const data = await response.json()
-        const mappedAdvantages: Advantage[] = data.map((item: any) => ({
-          id: String(item.ID),
-          companyId: String(item.empresa_parceira_id),
-          companyName: item.empresa_parceira?.nome || "Empresa Parceira",
-          title: item.titulo,
-          description: item.descricao,
-          cost: Number(item.custo_moedas),
-          imageUrl: item.foto_url || "/default.png",
-        }))
-
-        setAdvantages(mappedAdvantages)
+        const data = await getVantagensParaAluno()
+        setAdvantages(data) 
       } catch (err: any) {
         console.error("Erro ao buscar vantagens:", err)
         setAdvantagesError(err.message)
@@ -78,12 +72,17 @@ export default function StudentDashboard() {
     fetchAdvantages()
   }, [])
 
-  // 🎁 Redeem advantage function
   const handleRedeem = async (advantage: Advantage) => {
-    if (redeemingId) return // Prevent multiple redemptions
+    if (redeemingId) return 
     if (!aluno) {
       alert("Erro: Dados do aluno não carregados. Tente recarregar a página.")
       return
+    }
+
+    const advStatus = advantages.find(a => a.vantagem.id === advantage.id)
+    if (advStatus?.ja_resgatada) {
+       alert("Você já resgatou esta vantagem.")
+       return
     }
 
     if (aluno.saldo_moedas < advantage.cost) {
@@ -96,13 +95,35 @@ export default function StudentDashboard() {
     )
     if (!confirmed) return
 
-    setRedeemingId(advantage.id) // Set loading state for this specific advantage
+    setRedeemingId(advantage.id) 
 
     try {
-      const valorDebito = -advantage.cost
-      // Call the API to update the student's balance
-      const alunoAtualizado = await updateAlunoSaldo(valorDebito)
-      setAluno(alunoAtualizado) // Update local student state with new balance
+      await resgatarVantagem(advantage.id)
+
+      setAluno(prevAluno => {
+        if (!prevAluno) return null
+        return {
+          ...prevAluno,
+          saldo_moedas: prevAluno.saldo_moedas - advantage.cost,
+        }
+      })
+
+      setAdvantages(prevAdvantages =>
+        prevAdvantages.map(advWithStatus =>
+          advWithStatus.vantagem.id === advantage.id
+            ? {
+                ...advWithStatus,
+                ja_resgatada: true, 
+                vantagem: {
+                  ...advWithStatus.vantagem,
+                  quantidade: advWithStatus.vantagem.quantidade
+                    ? advWithStatus.vantagem.quantidade - 1
+                    : 0,
+                },
+              }
+            : advWithStatus,
+        ),
+      )
 
       alert(
         `Vantagem "${advantage.title}" resgatada com sucesso!\n\nUm email com o cupom será enviado para você!`,
@@ -111,7 +132,7 @@ export default function StudentDashboard() {
       console.error("Erro ao resgatar vantagem:", err)
       alert(err.message || "Não foi possível resgatar a vantagem. Tente novamente.")
     } finally {
-      setRedeemingId(null) // Reset loading state
+      setRedeemingId(null) 
     }
   }
 
@@ -148,7 +169,6 @@ export default function StudentDashboard() {
           <p className="text-blue-100 text-lg">Acompanhe seu saldo e resgate vantagens incríveis</p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             title="Saldo Atual"
@@ -168,7 +188,7 @@ export default function StudentDashboard() {
 
           <StatCard
             title="Moedas Recebidas"
-            value={1250} // Revertido para o valor estático original
+            value={1250} 
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
@@ -178,7 +198,7 @@ export default function StudentDashboard() {
 
           <StatCard
             title="Vantagens Resgatadas"
-            value={8} // Revertido para o valor estático original
+            value={8} 
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -192,7 +212,6 @@ export default function StudentDashboard() {
           />
         </div>
 
-        {/* Featured Advantages */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-gray-900">Vantagens em Destaque</h2>
@@ -216,13 +235,14 @@ export default function StudentDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {advantages.slice(0, 3).map((advantage) => (
+                  {advantages.slice(0, 3).map((advantageWithStatus) => (
                     <AdvantageCard
-                      key={advantage.id}
-                      advantage={advantage}
+                      key={advantageWithStatus.vantagem.id}
+                      advantage={advantageWithStatus.vantagem}
                       onRedeem={handleRedeem}
                       userBalance={aluno.saldo_moedas}
-                      isLoading={redeemingId === advantage.id}
+                      isLoading={redeemingId === advantageWithStatus.vantagem.id}
+                      isRedeemed={advantageWithStatus.ja_resgatada} 
                     />
                   ))}
                 </div>
@@ -231,7 +251,6 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Recent Transactions */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-gray-900">Transações Recentes</h2>
@@ -248,7 +267,7 @@ export default function StudentDashboard() {
               <div className="p-4 text-center text-muted">Nenhuma transação recente.</div>
             ) : (
               transactions
-                .slice(0, 5) // Show a maximum of 5 recent transactions
+                .slice(0, 5) 
                 .map((transaction) => (
                   <TransactionItem key={transaction.id} transaction={transaction} userType="student" />
                 ))
