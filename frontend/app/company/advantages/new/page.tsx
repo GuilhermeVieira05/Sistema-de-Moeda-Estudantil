@@ -6,8 +6,12 @@ import TextField from "@/components/text-field"
 import Button from "@/components/button"
 import { useRouter } from "next/navigation"
 
+
+
+
+
 export default function NewAdvantagePage() {
-  const router = useRouter()
+  const router = useRouter() 
   const [loading, setLoading] = useState(false)
   const [company, setCompany] = useState<any>(null)
 
@@ -16,9 +20,9 @@ export default function NewAdvantagePage() {
     descricao: "",
     custo_moedas: "",
     foto_url: "",
+    quantidade_disponivel: "", 
   })
 
-  // 🔹 Busca os dados da empresa com base no token JWT
   useEffect(() => {
     const fetchCompany = async () => {
       try {
@@ -42,7 +46,6 @@ export default function NewAdvantagePage() {
         setCompany(data)
       } catch (err) {
         console.error("❌ Erro ao buscar empresa:", err)
-        alert("Erro ao carregar informações da empresa.")
       }
     }
 
@@ -53,7 +56,6 @@ export default function NewAdvantagePage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // 🔹 Envia os dados da vantagem para o backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -71,6 +73,11 @@ export default function NewAdvantagePage() {
         descricao: formData.descricao,
         foto_url: formData.foto_url,
         custo_moedas: parseInt(formData.custo_moedas),
+        quantidade: parseInt(formData.quantidade_disponivel), 
+      }
+
+      if (isNaN(payload.custo_moedas) || isNaN(payload.quantidade)) {
+        throw new Error("Custo em moedas e Quantidade devem ser números válidos.")
       }
 
       const response = await fetch("http://localhost:8080/api/empresa/vantagens", {
@@ -92,7 +99,7 @@ export default function NewAdvantagePage() {
       router.push("/company/advantages")
     } catch (err) {
       console.error("❌ Erro ao cadastrar vantagem:", err)
-      alert("Erro ao cadastrar vantagem. Verifique os campos e tente novamente.")
+      alert(`Erro ao cadastrar vantagem. ${err instanceof Error ? err.message : "Verifique os campos e tente novamente."}`)
     } finally {
       setLoading(false)
     }
@@ -109,18 +116,18 @@ export default function NewAdvantagePage() {
   }
 
   return (
-    <DashboardLayout userType="company" userName={company.nome || "Empresa"}>
+    <DashboardLayout userType="company" userName={company?.nome || "Empresa"}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Nova Vantagem</h1>
-          <p className="text-muted">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Nova Vantagem</h1>
+          <p className="text-gray-600">
             Cadastre uma nova vantagem para os estudantes
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl p-8 border border-border space-y-6"
+          className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm space-y-6"
         >
           <TextField
             label="Título da vantagem"
@@ -140,14 +147,26 @@ export default function NewAdvantagePage() {
             required
           />
 
-          <TextField
-            label="Custo em moedas"
-            type="number"
-            value={formData.custo_moedas}
-            onChange={(v) => updateField("custo_moedas", v)}
-            placeholder="Ex: 300"
-            required
-          />
+          <div className="flex flex-col sm:flex-row gap-6">
+            <TextField
+              label="Custo em moedas"
+              type="number"
+              value={formData.custo_moedas}
+              onChange={(v) => updateField("custo_moedas", v)}
+              placeholder="Ex: 300"
+              required
+            />
+
+            {/* 🔹 CAMPO ADICIONADO AO FORMULÁRIO 🔹 */}
+            <TextField
+              label="Quantidade Disponível (Estoque)"
+              type="number"
+              value={formData.quantidade_disponivel}
+              onChange={(v) => updateField("quantidade_disponivel", v)}
+              placeholder="Ex: 50"
+              required
+            />
+          </div>
 
           <TextField
             label="URL da imagem"
@@ -158,11 +177,16 @@ export default function NewAdvantagePage() {
           />
 
           {formData.foto_url && (
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
               <img
-                src={formData.foto_url || "/placeholder.svg"}
+                src={formData.foto_url}
                 alt="Preview"
                 className="w-full h-48 object-cover"
+                onError={(e) => {
+                  // Adiciona um placeholder em caso de erro na URL
+                  const target = e.target as HTMLImageElement
+                  target.src = "https://placehold.co/600x200/e2e8f0/94a3b8?text=Imagem+Invalida"
+                }}
               />
             </div>
           )}
@@ -196,11 +220,10 @@ export default function NewAdvantagePage() {
               type="button"
               variant="outline"
               onClick={() => router.push("/company/advantages")}
-              
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} >
+            <Button type="submit" disabled={loading}>
               {loading ? "Cadastrando..." : "Cadastrar Vantagem"}
             </Button>
           </div>

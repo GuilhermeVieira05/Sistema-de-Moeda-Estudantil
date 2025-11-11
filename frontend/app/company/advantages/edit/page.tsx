@@ -7,9 +7,9 @@ import Button from "@/components/button"
 import { useRouter, useSearchParams } from "next/navigation"
 
 export default function EditAdvantagePage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = searchParams.get("id") // ID vem como string
+  const router = useRouter() 
+  const searchParams = useSearchParams() 
+  const id = searchParams.get("id")
 
   const [loading, setLoading] = useState(false)
   const [company, setCompany] = useState<any>(null)
@@ -20,6 +20,7 @@ export default function EditAdvantagePage() {
     descricao: "",
     custo_moedas: "",
     foto_url: "",
+    quantidade: "",
   })
 
   useEffect(() => {
@@ -53,12 +54,14 @@ export default function EditAdvantagePage() {
         if (!vantRes.ok) throw new Error("Erro ao buscar vantagem")
         const vant = await vantRes.json()
 
-        // Ajustar para o padrão do formulário
         setFormData({
           titulo: vant.titulo ?? "",
           descricao: vant.descricao ?? "",
           custo_moedas: String(vant.custoMoedas ?? vant.custo_moedas ?? ""),
           foto_url: vant.fotoURL ?? vant.foto_url ?? "",
+          quantidade: String(
+            vant.quantidade ?? ""
+          ),
         })
       } catch (err) {
         console.error("❌ Erro ao carregar dados:", err)
@@ -92,6 +95,12 @@ export default function EditAdvantagePage() {
         descricao: formData.descricao,
         foto_url: formData.foto_url,
         custo_moedas: parseInt(formData.custo_moedas),
+        quantidade: parseInt(formData.quantidade),
+      }
+
+      // 🔹 VALIDAÇÃO ATUALIZADA
+      if (isNaN(payload.custo_moedas) || isNaN(payload.quantidade)) {
+        throw new Error("Custo em moedas e Quantidade devem ser números válidos.")
       }
 
       const response = await fetch(`http://localhost:8080/api/empresa/vantagens/${id}`, {
@@ -110,7 +119,7 @@ export default function EditAdvantagePage() {
       router.push("/company/advantages")
     } catch (err) {
       console.error("❌ Erro ao atualizar:", err)
-      alert("Erro ao atualizar vantagem.")
+      alert(`Erro ao atualizar vantagem. ${err instanceof Error ? err.message : "Verifique os campos."}`)
     } finally {
       setLoading(false)
     }
@@ -130,13 +139,13 @@ export default function EditAdvantagePage() {
     <DashboardLayout userType="company" userName={company.nome || "Empresa"}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Editar Vantagem</h1>
-          <p className="text-muted">Atualize os dados da vantagem</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Editar Vantagem</h1>
+          <p className="text-gray-600">Atualize os dados da vantagem</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl p-8 border border-border space-y-6"
+          className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm space-y-6"
         >
           <TextField
             label="Título da vantagem"
@@ -154,13 +163,24 @@ export default function EditAdvantagePage() {
             required
           />
 
-          <TextField
-            label="Custo em moedas"
-            type="number"
-            value={formData.custo_moedas}
-            onChange={(v) => updateField("custo_moedas", v)}
-            required
-          />
+          <div className="flex flex-col sm:flex-row gap-6">
+            <TextField
+              label="Custo em moedas"
+              type="number"
+              value={formData.custo_moedas}
+              onChange={(v) => updateField("custo_moedas", v)}
+              required
+            />
+
+            <TextField
+              label="Quantidade Disponível (Estoque)"
+              type="number"
+              value={formData.quantidade}
+              onChange={(v) => updateField("quantidade_disponivel", v)}
+              placeholder="Ex: 50"
+              required
+            />
+          </div>
 
           <TextField
             label="URL da imagem"
@@ -170,11 +190,15 @@ export default function EditAdvantagePage() {
           />
 
           {formData.foto_url && (
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
               <img
                 src={formData.foto_url}
                 alt="Preview"
                 className="w-full h-48 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.src = "https://placehold.co/600x200/e2e8f0/94a3b8?text=Imagem+Invalida"
+                }}
               />
             </div>
           )}

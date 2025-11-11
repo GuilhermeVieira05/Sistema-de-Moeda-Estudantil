@@ -5,14 +5,8 @@ import DashboardLayout from "@/components/dashboard-layout"
 import AdvantageCard from "@/components/advantage-card"
 import Button from "@/components/button"
 import { useRouter } from "next/navigation"
+import { Advantage } from "@/types"
 
-interface Advantage {
-  id: number
-  titulo: string
-  descricao: string
-  foto_url: string
-  custo_moedas: number
-}
 
 export default function CompanyAdvantagesPage() {
   const router = useRouter()
@@ -46,14 +40,19 @@ export default function CompanyAdvantagesPage() {
         if (!res.ok) throw new Error("Erro ao buscar vantagens")
 
         const data = await res.json()
+        console.log("Vantagens buscadas:", data)
 
         // ✅ Converter retorno do backend
         const formatted: Advantage[] = data.map((v: any) => ({
-          id: v.ID, // <-- Backend retorna ID com letra maiúscula
-          titulo: v.titulo,
-          descricao: v.descricao,
-          foto_url: v.foto_url,
-          custo_moedas: v.custo_moedas,
+          id: String(v.ID),
+          companyId: String(v.empresa_parceira_id),
+          companyName: v.empresa_parceira?.nome || "Empresa Parceira",
+          title: v.titulo,
+          description: v.descricao,
+          cost: Number(v.custo_moedas),
+          imageUrl: v.foto_url || "/default.png",
+          quantidade: Number(v.quantidade),
+          estoque: Number(v.estoque), 
         }))
 
         setAdvantages(formatted)
@@ -69,7 +68,7 @@ export default function CompanyAdvantagesPage() {
   }, [router])
 
   const filteredAdvantages = advantages.filter((adv) =>
-    adv.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+    adv.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   if (loading) {
@@ -121,10 +120,12 @@ export default function CompanyAdvantagesPage() {
                   id: adv.id.toString(),
                   companyId: "",
                   companyName,
-                  title: adv.titulo,
-                  description: adv.descricao,
-                  cost: adv.custo_moedas,
-                  imageUrl: adv.foto_url || "/placeholder.svg",
+                  title: adv.title,
+                  description: adv.description,
+                  cost: adv.cost,
+                  imageUrl: adv.imageUrl || "/placeholder.svg",
+                  quantidade: adv.quantidade,
+                  estoque: adv.estoque,
                 }}
                 onEdit={() => router.push(`/company/advantages/edit?id=${adv.id}`)}
               />

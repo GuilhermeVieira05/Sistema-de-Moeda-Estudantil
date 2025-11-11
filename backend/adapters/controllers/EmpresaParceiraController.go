@@ -39,6 +39,7 @@ type CriarVantagemRequest struct {
 	Descricao   string `json:"descricao" binding:"required"`
 	FotoURL     string `json:"foto_url"`
 	CustoMoedas int    `json:"custo_moedas" binding:"required,gt=0"`
+	Quantidade  int    `json:"quantidade" binding:"required,gt=0"`
 }
 
 func (ctrl *EmpresaParceiraController) GetVantagem(c *gin.Context) {
@@ -92,6 +93,8 @@ func (h *EmpresaParceiraController) CriarVantagem(c *gin.Context) {
 		FotoURL:           req.FotoURL,
 		CustoMoedas:       req.CustoMoedas,
 		Ativa:             true,
+		Quantidade:        req.Quantidade,
+		Estoque:           req.Quantidade,
 	}
 
 	if err := h.vantagemService.CreateVantagem(vantagem); err != nil {
@@ -142,6 +145,8 @@ func (h *EmpresaParceiraController) AtualizarVantagem(c *gin.Context) {
 		Descricao:   req.Descricao,
 		FotoURL:     req.FotoURL,
 		CustoMoedas: req.CustoMoedas,
+		Quantidade:  req.Quantidade,
+		Estoque:     req.Quantidade,
 	}
 
 	if err := h.vantagemService.UpdateVantagem(uint(vantagemID), vantagemAtualizada); err != nil {
