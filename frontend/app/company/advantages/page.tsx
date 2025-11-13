@@ -6,6 +6,7 @@ import AdvantageCard from "@/components/advantage-card"
 import Button from "@/components/button"
 import { useRouter } from "next/navigation"
 import { Advantage } from "@/types"
+import { useNotification } from "@/context/NotificationContext"
 
 
 export default function CompanyAdvantagesPage() {
@@ -14,13 +15,14 @@ export default function CompanyAdvantagesPage() {
   const [advantages, setAdvantages] = useState<Advantage[]>([])
   const [companyName, setCompanyName] = useState("Carregando...")
   const [loading, setLoading] = useState(true)
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     const fetchAdvantages = async () => {
       try {
         const token = localStorage.getItem("token")
         if (!token) {
-          alert("Token não encontrado. Faça login novamente.")
+          showNotification("Token não encontrado. Faça login novamente", "warning");
           router.push("/login")
           return
         }
@@ -52,13 +54,13 @@ export default function CompanyAdvantagesPage() {
           cost: Number(v.custo_moedas),
           imageUrl: v.foto_url || "/default.png",
           quantidade: Number(v.quantidade),
-          estoque: Number(v.estoque), 
+          estoque: Number(v.estoque),
         }))
 
         setAdvantages(formatted)
       } catch (err) {
         console.error("Erro ao buscar vantagens:", err)
-        alert("Erro ao carregar vantagens.")
+        showNotification("Erro ao carregar vantagem", "error");
       } finally {
         setLoading(false)
       }

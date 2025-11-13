@@ -8,6 +8,7 @@ import TextField from "@/components/text-field"
 import SelectField from "@/components/select-field"
 import Button from "@/components/button"
 import Link from "next/link"
+import { useNotification } from "@/context/NotificationContext"
 
 const mockInstitutions = [
   { value: "puc", label: "PUC Minas" },
@@ -26,6 +27,7 @@ const mockDepartments = [
 export default function ProfessorRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const { showNotification } = useNotification()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -44,7 +46,7 @@ export default function ProfessorRegisterPage() {
     setLoading(true)
 
     if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem")
+      showNotification("As senhas não coincidem", "error");
       setLoading(false)
       return
     }
@@ -67,16 +69,16 @@ export default function ProfessorRegisterPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        alert(data.error || "Erro ao criar professor")
+        showNotification(data.error || "Erro ao criar professor", "error");
         setLoading(false)
         return
       }
 
-      alert("Professor criado com sucesso!")
+      showNotification("Professor criado com sucesso!", "success");
       router.push("/login")
     } catch (err) {
       console.error(err)
-      alert("Erro ao conectar com o servidor")
+      showNotification("Erro ao conectar com o servidor", "error");
       setLoading(false)
     }
   }

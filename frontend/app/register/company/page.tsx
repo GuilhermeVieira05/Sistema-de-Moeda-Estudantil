@@ -3,6 +3,7 @@ import AuthLayout from "@/components/auth-layout"
 import Button from "@/components/button"
 import RegisterForm from "@/components/register-form"
 import TextField from "@/components/text-field"
+import { useNotification } from "@/context/NotificationContext"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useState } from "react"
@@ -10,7 +11,7 @@ import { useState } from "react"
 export default function CompanyRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-
+  const { showNotification } = useNotification()
   const [formData, setFormData] = useState({
     companyName: "",
     cnpj: "",
@@ -26,7 +27,7 @@ export default function CompanyRegisterPage() {
     setLoading(true)
 
     if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem")
+      showNotification("As senhas não coincidem", "error");
       setLoading(false)
       return
     }
@@ -47,16 +48,16 @@ export default function CompanyRegisterPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        alert(errorData.error || "Erro ao criar conta")
+        showNotification(errorData || "Erro ao criar empresa", "error");
         setLoading(false)
         return
       }
 
-      alert("Conta criada com sucesso!")
+      showNotification("Empresa criado com sucesso!", "success");
       router.push("/login")
     } catch (err) {
       console.error(err)
-      alert("Erro de conexão com o servidor.")
+      showNotification("Erro ao conectar com o servidor", "error");
     } finally {
       setLoading(false)
     }

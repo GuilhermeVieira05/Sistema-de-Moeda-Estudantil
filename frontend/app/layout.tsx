@@ -1,6 +1,7 @@
 import type React from "react"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import { NotificationProvider } from "@/context/NotificationContext"
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -24,7 +25,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>{children}</body>
+      <body className="test-bg-gradient">
+        <NotificationProvider>
+          {children}
+        </NotificationProvider>
+      </body>
     </html>
   )
 }

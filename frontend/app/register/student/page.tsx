@@ -10,6 +10,7 @@ import Button from "@/components/button"
 import Link from "next/link"
 import { getAllInstituicoes } from "@/api/instituicoesApi"
 import { Institution } from "@/types"
+import { useNotification } from "@/context/NotificationContext"
 
 const mockCourses = [
   { value: "eng-software", label: "Engenharia de Software" },
@@ -22,7 +23,8 @@ export default function StudentRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [instituicoes, setInstituicoes] = useState<Institution[]>([])
-  
+  const { showNotification } = useNotification();
+
   useEffect(() => {
     const fetchInstituicoes = async () => {
       const instituicoes = await getAllInstituicoes()
@@ -48,7 +50,7 @@ export default function StudentRegisterPage() {
     setLoading(true)
 
     if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem")
+      showNotification("As senhas não coincidem", "error");
       setLoading(false)
       return
     }
@@ -71,16 +73,16 @@ export default function StudentRegisterPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        alert(data.error || "Erro ao criar aluno")
+        showNotification(data.error || "Erro ao criar aluno", "error");
         setLoading(false)
         return
       }
 
-      alert("Aluno criado com sucesso!")
+      showNotification("Aluno criado com sucesso!", "success");
       router.push("/login")
     } catch (err) {
       console.error(err)
-      alert("Erro ao conectar com o servidor")
+      showNotification("Erro ao conectar com o servidor", "error");
       setLoading(false)
     }
   }

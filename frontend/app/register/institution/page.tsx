@@ -8,11 +8,12 @@ import AuthLayout from "@/components/auth-layout"
 import TextField from "@/components/text-field"
 import Button from "@/components/button"
 import Link from "next/link"
+import { useNotification } from "@/context/NotificationContext"
 
 export default function InstitutionRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-
+  const { showNotification } = useNotification()
   const [formData, setFormData] = useState({
     name: "",
     cnpj: "",
@@ -26,7 +27,7 @@ export default function InstitutionRegisterPage() {
     setLoading(true)
 
     if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem")
+      showNotification("As senhas não coincidem", "error");
       setLoading(false)
       return
     }
@@ -46,16 +47,16 @@ export default function InstitutionRegisterPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        alert(data.error || "Erro ao criar instituição")
+        showNotification(data.error || "Erro ao criar instituição", "error");
         setLoading(false)
         return
       }
 
-      alert("Instituição criada com sucesso!")
+      showNotification("Instituição criado com sucesso!", "success");
       router.push("/login") // Redireciona para o login após o sucesso
     } catch (err) {
       console.error(err)
-      alert("Erro ao conectar com o servidor")
+      showNotification("Erro ao conectar com o servidor", "error");
       setLoading(false)
     }
   }

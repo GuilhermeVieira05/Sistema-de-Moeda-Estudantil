@@ -132,3 +132,50 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-30px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Classes utilitárias para usar as animações no Tailwind */
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  /* Certifique-se de que o scroll está habilitado para o body, se necessário */
+  /* overflow: auto; */
+}
+
+.test-bg-gradient {
+  font-family: var(--font-geist-sans);
+  color: #333;
+   background: linear-gradient(90deg, #6dd5edb6, #2193b0a9, #38b6ffd0, #a7e6f9b0);
+  background-size: 400% 400%;
+  animation: gradient-animation 20s ease infinite alternate;
+}
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%; /* Começa no lado esquerdo do gradiente */
+  }
+  50% {
+    background-position: 100% 50%; /* Move para o lado direito */
+  }
+  100% {
+    background-position: 0% 50%; /* Volta para o início (com 'alternate' ele faz o caminho inverso) */
+  }
+}

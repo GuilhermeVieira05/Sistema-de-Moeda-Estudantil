@@ -10,11 +10,13 @@ import {
   getAlunoData,
   getExtrato,
   getVantagensParaAluno,
-  resgatarVantagem, 
-  type AdvantageWithStatus, 
+  resgatarVantagem,
+  type AdvantageWithStatus,
 } from "@/api/alunoApi"
 import { useEffect, useState } from "react"
 import LoadingSpinner from "@/components/loading-spinner"
+import { useNotification } from "@/context/NotificationContext"
+import ConfirmationModal from "@/components/confirmation-modal"
 
 export default function StudentDashboard() {
   const [aluno, setAluno] = useState<Student | null>(null)
@@ -26,6 +28,11 @@ export default function StudentDashboard() {
   const [advantagesLoading, setAdvantagesLoading] = useState(true)
   const [advantagesError, setAdvantagesError] = useState<string | null>(null)
   const [redeemingId, setRedeemingId] = useState<string | null>(null)
+  const [totalCoinsReceived, setTotalCoinsReceived] = useState(0);
+  const [totalAdvantagesRedeemed, setTotalAdvantagesRedeemed] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [advantageToRedeem, setAdvantageToRedeem] = useState<Advantage | null>(null);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,6 +50,23 @@ export default function StudentDashboard() {
 
         const transactionsData = await getExtrato()
         setTransactions(transactionsData.transacoes)
+
+        let received = 0;
+        let redeemed = 0;
+
+        transactionsData.transacoes.forEach((transaction: any) => {
+          if (transaction.professor_id) {
+            // Se tem professor_id, é uma moeda recebida
+            received += transaction.valor!;
+          } else {
+            // Se não tem professor_id, é uma vantagem resgatada
+            redeemed += 1;
+          }
+        });
+
+        setTotalCoinsReceived(received);
+        setTotalAdvantagesRedeemed(redeemed);
+
       } catch (err: any) {
         console.error("Erro ao buscar dados iniciais:", err)
         setError(err.message || "Ocorreu um erro desconhecido ao carregar os dados.")
@@ -60,7 +84,7 @@ export default function StudentDashboard() {
       setAdvantagesError(null)
       try {
         const data = await getVantagensParaAluno()
-        setAdvantages(data) 
+        setAdvantages(data)
       } catch (err: any) {
         console.error("Erro ao buscar vantagens:", err)
         setAdvantagesError(err.message)
@@ -73,68 +97,87 @@ export default function StudentDashboard() {
   }, [])
 
   const handleRedeem = async (advantage: Advantage) => {
-    if (redeemingId) return 
+    if (redeemingId) return // Já existe um resgate em andamento
+
     if (!aluno) {
-      alert("Erro: Dados do aluno não carregados. Tente recarregar a página.")
+      showNotification("Erro: Dados do aluno não carregados. Tente recarregar a página.", "error");
       return
     }
 
     const advStatus = advantages.find(a => a.vantagem.id === advantage.id)
     if (advStatus?.ja_resgatada) {
-       alert("Você já resgatou esta vantagem.")
-       return
-    }
-
-    if (aluno.saldo_moedas < advantage.cost) {
-      alert("Saldo insuficiente para resgatar esta vantagem.")
+      showNotification("Você já resgatou esta vantagem.", "warning");
       return
     }
 
-    const confirmed = confirm(
-      `Você tem certeza que quer resgatar "${advantage.title}" por ${advantage.cost} moedas?`,
-    )
-    if (!confirmed) return
+    if (aluno.saldo_moedas < advantage.cost) {
+      showNotification("Saldo insuficiente para resgatar esta vantagem.", "warning");
+      return
+    }
 
-    setRedeemingId(advantage.id) 
+    // Abrir o modal de confirmação
+    setAdvantageToRedeem(advantage);
+    setIsModalOpen(true);
+  }
+
+  // Função para confirmar o resgate (chamada pelo modal)
+  const confirmRedeem = async () => {
+    if (!advantageToRedeem || !aluno) return; // Não deve acontecer se o modal for aberto corretamente
+
+    setIsModalOpen(false); // Fechar o modal imediatamente
+    setRedeemingId(advantageToRedeem.id); // Ativar estado de carregamento para a vantagem específica
 
     try {
-      await resgatarVantagem(advantage.id)
+      await resgatarVantagem(advantageToRedeem.id);
 
+      // Atualizar saldo do aluno
       setAluno(prevAluno => {
-        if (!prevAluno) return null
+        if (!prevAluno) return null;
         return {
           ...prevAluno,
-          saldo_moedas: prevAluno.saldo_moedas - advantage.cost,
-        }
-      })
+          saldo_moedas: prevAluno.saldo_moedas - advantageToRedeem.cost,
+        };
+      });
 
+      // Atualizar status da vantagem
       setAdvantages(prevAdvantages =>
         prevAdvantages.map(advWithStatus =>
-          advWithStatus.vantagem.id === advantage.id
+          advWithStatus.vantagem.id === advantageToRedeem.id
             ? {
-                ...advWithStatus,
-                ja_resgatada: true, 
-                vantagem: {
-                  ...advWithStatus.vantagem,
-                  quantidade: advWithStatus.vantagem.quantidade
-                    ? advWithStatus.vantagem.quantidade - 1
-                    : 0,
-                },
-              }
+              ...advWithStatus,
+              ja_resgatada: true,
+              vantagem: {
+                ...advWithStatus.vantagem,
+                quantidade: advWithStatus.vantagem.quantidade
+                  ? advWithStatus.vantagem.quantidade - 1
+                  : 0,
+              },
+            }
             : advWithStatus,
         ),
-      )
+      );
 
-      alert(
-        `Vantagem "${advantage.title}" resgatada com sucesso!\n\nUm email com o cupom será enviado para você!`,
-      )
+      // Atualizar contador de vantagens resgatadas
+      setTotalAdvantagesRedeemed(prev => prev + 1);
+
+      showNotification(
+        `Vantagem "${advantageToRedeem.title}" resgatada com sucesso! Um email com o cupom será enviado para você!`,
+        "success"
+      );
     } catch (err: any) {
-      console.error("Erro ao resgatar vantagem:", err)
-      alert(err.message || "Não foi possível resgatar a vantagem. Tente novamente.")
+      console.error("Erro ao resgatar vantagem:", err);
+      showNotification(err.message || "Não foi possível resgatar a vantagem. Tente novamente.", "error");
     } finally {
-      setRedeemingId(null) 
+      setRedeemingId(null); // Finalizar estado de carregamento
+      setAdvantageToRedeem(null); // Limpar vantagem pendente
     }
-  }
+  };
+
+  const cancelRedeem = () => {
+    setIsModalOpen(false);
+    setAdvantageToRedeem(null); // Limpar vantagem pendente
+    showNotification("Resgate de vantagem cancelado.", "info"); // Notificação de cancelamento
+  };
 
   const handleName = (name: string) => {
     let splitName = name.split(" ")
@@ -187,8 +230,8 @@ export default function StudentDashboard() {
           />
 
           <StatCard
-            title="Moedas Recebidas"
-            value={1250} 
+            title="Total de Moedas Recebidas"
+            value={totalCoinsReceived}
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
@@ -198,7 +241,7 @@ export default function StudentDashboard() {
 
           <StatCard
             title="Vantagens Resgatadas"
-            value={8} 
+            value={totalAdvantagesRedeemed}
             icon={
               <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -242,7 +285,7 @@ export default function StudentDashboard() {
                       onRedeem={handleRedeem}
                       userBalance={aluno.saldo_moedas}
                       isLoading={redeemingId === advantageWithStatus.vantagem.id}
-                      isRedeemed={advantageWithStatus.ja_resgatada} 
+                      isRedeemed={advantageWithStatus.ja_resgatada}
                     />
                   ))}
                 </div>
@@ -255,7 +298,7 @@ export default function StudentDashboard() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-gray-900">Transações Recentes</h2>
             <a
-              href="/student/transactions"
+              href="/student/transaction"
               className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
             >
               Ver extrato completo →
@@ -267,7 +310,7 @@ export default function StudentDashboard() {
               <div className="p-4 text-center text-muted">Nenhuma transação recente.</div>
             ) : (
               transactions
-                .slice(0, 5) 
+                .slice(0, 5)
                 .map((transaction) => (
                   <TransactionItem key={transaction.id} transaction={transaction} userType="student" />
                 ))
@@ -275,6 +318,19 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+      {isModalOpen && advantageToRedeem && (
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          title="Confirmar Resgate"
+          message={`Você tem certeza que deseja resgatar "${advantageToRedeem.title}" por ${advantageToRedeem.cost} moedas?`}
+          onConfirm={confirmRedeem}
+          onCancel={cancelRedeem}
+        
+          confirmText={redeemingId === advantageToRedeem.id ? "Resgatando..." : "Confirmar Resgate"}
+          cancelText="Cancelar"
+      
+        />
+      )}
     </DashboardLayout>
   )
 }
