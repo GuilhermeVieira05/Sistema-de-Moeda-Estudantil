@@ -71,11 +71,6 @@ Criar uma plataforma que:
 - Gerenciar cursos e turmas
 - Definir quantidade de moedas semestrais para professores
 
-### Para Administradores
-- Cadastrar instituições de ensino
-- Cadastrar empresas parceiras
-- Monitorar o sistema
-
 ---
 
 ## 🛠 Tecnologias Utilizadas
