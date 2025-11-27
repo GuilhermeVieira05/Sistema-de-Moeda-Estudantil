@@ -1,4 +1,20 @@
+<div align="center">
+
 # Sistema de Moeda Estudantil
+Uma plataforma de incentivo acadêmico baseada em mérito e recompensas virtuais
+
+<img src="https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white&style=for-the-badge" />
+<img src="https://img.shields.io/badge/Gin-008ECF?style=for-the-badge" /> 
+<img src="https://img.shields.io/badge/GORM-6DB33F?style=for-the-badge" />
+<img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white&style=for-the-badge" />
+<img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white&style=for-the-badge" />
+<img src="https://img.shields.io/badge/Next.js_15-000000?logo=nextdotjs&logoColor=white&style=for-the-badge" /> 
+<img src="https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=black&style=for-the-badge" />
+<img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge" />
+<img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwindcss&logoColor=white&style=for-the-badge" /> 
+<img src="https://img.shields.io/badge/Material_UI-007FFF?logo=mui&logoColor=white&style=for-the-badge" />
+
+</div>
 
 ## 📋 Índice
 
