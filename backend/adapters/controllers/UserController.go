@@ -25,6 +25,16 @@ func NewUserController(userService *services.UserService, alunoService *services
     }
 }
 
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordRequest struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+}
+
+
 type LoginRequest struct {
     Email    string `json:"email" binding:"required,email"`
     Password string `json:"password" binding:"required"`
@@ -169,7 +179,6 @@ func (h *UserController) RegisterEmpresa(c *gin.Context) {
     })
 }
 
-// *** MÉTODO ADICIONADO ***
 func (h *UserController) RegisterInstituicao(c *gin.Context) {
     var req RegisterInstituicaoRequest
     if err := c.ShouldBindJSON(&req); err != nil {
@@ -216,4 +225,34 @@ func (h *UserController) RegisterInstituicao(c *gin.Context) {
         "message": "Instituição cadastrada com sucesso",
         "token":   token,
     })
+}
+
+func (h *UserController) ForgotPassword(c *gin.Context) {
+	var req ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.userService.ForgotPassword(req.Email); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Email de recuperação enviado (se o email existir)"})
+}
+
+func (h *UserController) ResetPassword(c *gin.Context) {
+	var req ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.userService.ResetPassword(req.Token, req.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Senha atualizada com sucesso"})
 }
