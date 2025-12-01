@@ -68,7 +68,7 @@ export default function AdvantageCard({
         )}
 
         <img
-          src={advantage.imageUrl || "/placeholder.svg"}
+          src={advantage.imageUrl || advantage.foto_url ||  "/placeholder.svg"}
           alt={advantage.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -81,7 +81,7 @@ export default function AdvantageCard({
               clipRule="evenodd"
             />
           </svg>
-          {advantage.cost}
+          {advantage.cost ?? advantage.custo_moedas}
         </div>
       </div>
 
@@ -89,19 +89,19 @@ export default function AdvantageCard({
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-xl text-gray-900 mb-2 truncate">
-              {advantage.title}
+              {advantage.title || advantage.titulo }
             </h3>
             <p className="text-sm font-medium text-gray-600">
               {advantage.quantidade}/{advantage.estoque}
             </p>
           </div>
           <p className="text-sm font-medium text-blue-600 truncate">
-            {advantage.companyName}
+            {advantage.companyName ?? advantage.empresa_parceira.nome!}
           </p>
         </div>
 
         <p className="text-sm text-gray-600 mb-6 line-clamp-2 min-h-[2.5rem]">
-          {advantage.description}
+          {advantage.description ?? advantage.descricao}
         </p>
 
         {onRedeem && (
