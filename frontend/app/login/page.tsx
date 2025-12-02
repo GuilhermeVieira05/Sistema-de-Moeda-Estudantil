@@ -7,9 +7,6 @@ import AuthLayout from "@/components/auth-layout"
 import AuthForm from "@/components/auth-form"
 import TextField from "@/components/text-field"
 import { useNotification } from "@/context/NotificationContext"
-import apiUrl from "../../api/apiUrl";
-
-
 
 export default function Page() {
   const [loginField, setLoginField] = useState("") // Mudei de 'email' para 'loginField'
@@ -23,7 +20,7 @@ export default function Page() {
     setLoading(true)
 
     try {
-      const res = await fetch(`${apiUrl}/auth/login`, {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // No backend, o handler de login deve verificar se 'login' é email ou cnpj

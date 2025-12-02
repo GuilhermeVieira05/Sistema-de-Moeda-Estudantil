@@ -1,3 +1,3 @@
-let apiUrl = "https://moeda-estudantil-deploy.onrender.com/api";
+let apiUrl = "http://localhost:8080/api";
 
 export default apiUrl;
