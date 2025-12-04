@@ -1,16 +1,18 @@
 import type React from "react"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Poppins, Nunito } from "next/font/google"
 import "./globals.css"
 import { NotificationProvider } from "@/context/NotificationContext"
 
-const geistSans = Geist({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-primary",
 })
 
-const geistMono = Geist_Mono({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-mono",
 })
 
 export const metadata = {
@@ -24,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="pt-BR" className={`${poppins.variable} ${nunito.variable}`}>
       <body className="test-bg-gradient">
         <NotificationProvider>
           {children}

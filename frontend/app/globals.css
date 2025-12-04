@@ -37,8 +37,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-geist-sans: "Geist", "Geist Fallback";
-  --font-geist-mono: "Geist Mono", "Geist Mono Fallback";
+--font-primary: "Nunito", sans-serif;
+--font-mono: "Nunito", sans-serif;
 }
 
 .dark {
@@ -77,8 +77,8 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+--font-primary: "Poppins", sans-serif;
+--font-mono: "Nunito", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -119,7 +119,7 @@
 
 /* Removido reset global que estava zerando margins e paddings */
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-primary);
   background-color: var(--color-background);
   color: var(--color-foreground);
 }
@@ -161,7 +161,7 @@ html, body {
 }
 
 .test-bg-gradient {
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-primary);
   color: #333;
    background: linear-gradient(90deg, #6dd5edb6, #2193b0a9, #38b6ffd0, #a7e6f9b0);
   background-size: 400% 400%;
