@@ -52,9 +52,13 @@ export interface Advantage {
   companyId: string
   companyName: string
   title: string
+  titulo?: string
+  descricao?: string
   description: string
   cost: number
+  custo_moedas?: number
   imageUrl: string
+  foto_url?: string
   quantidade: number
   estoque: number
 }

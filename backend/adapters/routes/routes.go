@@ -17,6 +17,9 @@ func SetupRoutes(r *gin.Engine, c *container.Container) {
 		public.POST("/auth/register/instituicao", c.UserController.RegisterInstituicao)
 		public.GET("/instituicoes", c.InstituicaoController.ListInstituicoes)
 		public.GET("/vantagens", c.VantagemController.ListVantagens)
+
+		public.POST("/auth/forgot-password", c.UserController.ForgotPassword)
+		public.POST("/auth/reset-password", c.UserController.ResetPassword)
 	}
 
 	protected := r.Group("/api")

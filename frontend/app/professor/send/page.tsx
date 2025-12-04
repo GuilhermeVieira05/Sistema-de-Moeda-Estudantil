@@ -95,7 +95,7 @@ export default function ProfessorSendPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          aluno_id: selectedStudent?.id,
+          aluno_id: Number(selectedStudent?.id),
           valor: amountNum,
           motivo: reason,
         }),

@@ -40,6 +40,10 @@ func (r *UserRepository) FindByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepository) Update(user *model.User) error {
+	return r.db.Save(user).Error
+}
+
 func (r *UserRepository) Delete(id uint) error {
 	return r.db.Delete(&model.User{}, id).Error
 }
